@@ -7,4 +7,3 @@ class Linkage < BaseObject
   end
 
 end
-
