@@ -1,9 +1,14 @@
-class Linkage < BaseObject
-  attr_accessor :foreign_id, :content
+module HarmonizerRedis
+  class Linkage < BaseObject
+    attr_accessor :content, :phrase
 
-  def initialize(params)
-    @foreign_id = params[:foreign_id]
-    @content = params[:content]
+    def initialize(params)
+      @id = params[:id]
+      @content = params[:content]
+
+      #if the phrase already exists : set to that phrase
+      #otherwise : create a new phrase and set linkage:phrase to that phrase
+    end
+
   end
-
 end
