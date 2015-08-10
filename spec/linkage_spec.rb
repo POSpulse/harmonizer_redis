@@ -11,9 +11,9 @@ describe HarmonizerRedis::Linkage do
   end
 
   it '#new' do
-    @linkage.should be_an_instance_of HarmonizerRedis::Linkage
-    @linkage.id.should == 5
-    @linkage.content.should == 'testing'
+    expect(@linkage).to be_instance_of(HarmonizerRedis::Linkage)
+    expect(@linkage.id).to eq(5)
+    expect(@linkage.content).to eq('testing')
   end
 
   it '#save' do
@@ -37,6 +37,10 @@ describe HarmonizerRedis::Linkage do
     expect(Redis.current.get("#{@linkage.class}:#{@linkage.id}:phrase")).to eq('HarmonizerRedis::Phrase:1')
     expect(Redis.current.get('HarmonizerRedis::Phrase:0:content')).to eq('different')
     expect(Redis.current.get('HarmonizerRedis::Phrase:1:content')).to eq('testing')
+  end
+
+  it 'should calculate similarities for new content' do
+
   end
 
 end

@@ -13,7 +13,7 @@ module HarmonizerRedis
       #otherwise : create a new phrase and set linkage:phrase to that phrase
       existing_phrase = HarmonizerRedis::Phrase.find_by_content(@content_normalized)
       if existing_phrase
-        @phrase = existing_phrase
+        @phrase = "HarmonizerRedis::Phrase:#{existing_phrase}"
       else
         new_phrase = HarmonizerRedis::Phrase.new(@content_normalized)
         new_phrase.save
