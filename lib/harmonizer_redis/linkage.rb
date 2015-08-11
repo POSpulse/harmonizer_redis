@@ -19,9 +19,7 @@ module HarmonizerRedis
         new_phrase.save
         @phrase = "#{new_phrase.class}:#{new_phrase.id}"
       end
-
       super()
     end
-
   end
 end

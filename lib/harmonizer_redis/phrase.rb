@@ -9,7 +9,12 @@ module HarmonizerRedis
     def save
       super()
       Redis.current.set("#{self.class}:[#{@content}]", "#{@id}")
-      Redis.current.sadd('HarmonizerRedis::Phrase:content_set', @content)
+      Redis.current.sadd('HarmonizerRedis::Phrase:new_content_set', @content)
+    end
+
+    def save_and_calculate
+      self.save
+      self.calculate_similarities
     end
 
     def self.find_by_content(content)
@@ -34,14 +39,26 @@ module HarmonizerRedis
 
     def self.batch_calc_similarities
       phrase_list = Redis.current.smembers('HarmonizerRedis::Phrase:content_set')
+      new_phrase_list = Redis.current.smembers('HarmonizerRedis::Phrase:new_content_set')
       id_list = phrase_list.map { |x| self.find_by_content(x)}
+      new_id_list = new_phrase_list.map { |x| self.find_by_content(x)}
       Redis.current.pipelined do
-        phrase_list.each_with_index do |phrase, i|
-          (i + 1...phrase_list.length).each do |j|
-            other_phrase = phrase_list[j]
+        new_phrase_list.each_with_index do |new_phrase, i|
+          phrase_list.each_with_index do |phrase, j|
             other_id = id_list[j]
             id = id_list[i]
-            score = FuzzyCompare.white_similarity(phrase, other_phrase) * -1
+            score = FuzzyCompare.white_similarity(new_phrase, phrase) * -1
+            Redis.current.zadd("HarmonizerRedis::Phrase#{id}:similarities", score, other_id)
+            Redis.current.zadd("HarmonizerRedis::Phrase#{other_id}:similarities", score, id)
+          end
+        end
+
+        new_phrase_list.each_with_index do |new_phrase, i|
+          (i + 1...new_phrase_list.length).each do |j|
+            other_phrase = new_phrase_list[j]
+            other_id = new_id_list[j]
+            id = new_id_list[i]
+            score = FuzzyCompare.white_similarity(new_phrase, other_phrase) * -1
             Redis.current.zadd("HarmonizerRedis::Phrase#{id}:similarities", score, other_id)
             Redis.current.zadd("HarmonizerRedis::Phrase#{other_id}:similarities", score, id)
           end
