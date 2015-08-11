@@ -41,9 +41,9 @@ module HarmonizerRedis
             other_phrase = phrase_list[j]
             other_id = id_list[j]
             id = id_list[i]
-            score = FuzzyCompare.white_similarity(phrase, other_phrase)
-            Redis.current.zadd("HarmonizerRedis::Phrase#{id}:similarities", other_id, score)
-            Redis.current.zadd("HarmonizerRedis::Phrase#{other_id}:similarities", id, score)
+            score = FuzzyCompare.white_similarity(phrase, other_phrase) * -1
+            Redis.current.zadd("HarmonizerRedis::Phrase#{id}:similarities", score, other_id)
+            Redis.current.zadd("HarmonizerRedis::Phrase#{other_id}:similarities", score, id)
           end
         end
       end

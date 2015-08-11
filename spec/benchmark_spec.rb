@@ -38,4 +38,12 @@ describe 'Benchmarking' do
     expect(time).to be < 10
   end
 
+  it 'should add 200 similarities quickly' do
+    (0...@to_add.length).each do |i|
+      new_linkage = HarmonizerRedis::Linkage.new(id: i, content: @to_add[i])
+      new_linkage.save
+    end
+
+  end
+
 end
