@@ -1,6 +1,6 @@
 module HarmonizerRedis
   class Phrase < BaseObject
-    attr_accessor :content
+    attr_accessor :content, :phrase_group
 
     def initialize(content)
       @content = content
@@ -10,6 +10,8 @@ module HarmonizerRedis
       super()
       Redis.current.set("#{self.class}:[#{@content}]", "#{@id}")
       Redis.current.sadd('HarmonizerRedis::Phrase:new_content_set', @content)
+      new_phrase_group = HarmonizerRedis::PhraseGroup.new(@id)
+      new_phrase_group.save
     end
 
     def save_and_calculate
@@ -17,8 +19,30 @@ module HarmonizerRedis
       self.calculate_similarities
     end
 
-    def self.find_by_content(content)
-      Redis.current.get("#{self}:[#{content}]")
+    class << self
+      def find_by_content(content)
+        Redis.current.get("#{self}:[#{content}]")
+      end
+
+      def get_content(phrase_id)
+        Redis.current.get("#{self}:#{phrase_id}:content")
+      end
+
+      #returns get phrase_group_id for phrase_id
+      def get_phrase_group(phrase_id)
+        Redis.current.get("#{self}:#{phrase_id}:phrase_group")
+      end
+
+      #returns sets phrase_group for phrase_id
+      def set_phrase_group(phrase_id, phrase_group_id)
+        Redis.current.set("#{self}:#{phrase_id}:phrase_group", phrase_group_id)
+      end
+
+      def merge_phrases(phrase_one_id, phrase_two_id, label = nil)
+        phrase_one_group_id = HarmonizerRedis::Phrase.get_phrase_group(phrase_one_id)
+        phrase_two_group_id = HarmonizerRedis::Phrase.get_phrase_group(phrase_two_id)
+        HarmonizerRedis::PhraseGroup.merge(phrase_one_group_id, phrase_two_group_id, label)
+      end
     end
 
     def calculate_similarities
@@ -60,7 +84,7 @@ module HarmonizerRedis
             id = new_id_list[i]
             score = FuzzyCompare.white_similarity(new_phrase, other_phrase) * -1
             Redis.current.zadd("HarmonizerRedis::Phrase#{id}:similarities", score, other_id)
-            Redis.current.zadd("HarmonizerRedis::Phrase#{other_id}:similarities", score, id)
+            #Redis.current.zadd("HarmonizerRedis::Phrase#{other_id}:similarities", score, id)
           end
         end
       end
