@@ -2,6 +2,7 @@ require 'harmonizer_redis/version'
 require 'harmonizer_redis/base_object'
 require 'harmonizer_redis/linkage'
 require 'harmonizer_redis/phrase'
+require 'harmonizer_redis/phrase_group'
 require 'active_support/all'
 
 module HarmonizerRedis

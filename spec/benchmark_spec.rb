@@ -62,18 +62,4 @@ describe 'Benchmarking' do
 
   end
 
-  # it 'should add 1 entry quickly' do
-  #   (0...@to_add.length).each do |i|
-  #     new_linkage = HarmonizerRedis::Linkage.new(id: i, content: @to_add[i])
-  #     new_linkage.save
-  #   end
-  #
-  #   time = Benchmark.realtime do
-  #     new_linkage = HarmonizerRedis::Linkage.new(id: @to_add.length, content: 'this has not existed')
-  #     new_linkage.save
-  #   end
-  #
-  #   expect(time).to be < 0
-  # end
-
 end
