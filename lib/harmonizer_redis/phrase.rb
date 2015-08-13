@@ -62,8 +62,10 @@ module HarmonizerRedis
     end
 
     def self.batch_calc_similarities
-      phrase_list = Redis.current.smembers('HarmonizerRedis::Phrase:content_set')
-      new_phrase_list = Redis.current.smembers('HarmonizerRedis::Phrase:new_content_set')
+      content_key = 'HarmonizerRedis::Phrase:content_set'
+      new_content_key = 'HarmonizerRedis::Phrase:new_content_set'
+      phrase_list = Redis.current.smembers(content_key)
+      new_phrase_list = Redis.current.smembers(new_content_key)
       id_list = phrase_list.map { |x| self.find_by_content(x)}
       new_id_list = new_phrase_list.map { |x| self.find_by_content(x)}
       Redis.current.pipelined do
@@ -72,8 +74,10 @@ module HarmonizerRedis
             other_id = id_list[j]
             id = id_list[i]
             score = FuzzyCompare.white_similarity(new_phrase, phrase) * -1
-            Redis.current.zadd("HarmonizerRedis::Phrase#{id}:similarities", score, other_id)
-            Redis.current.zadd("HarmonizerRedis::Phrase#{other_id}:similarities", score, id)
+            unless score > -0.2
+              Redis.current.zadd("HarmonizerRedis::Phrase#{id}:similarities", score, other_id)
+              Redis.current.zadd("HarmonizerRedis::Phrase#{other_id}:similarities", score, id)
+            end
           end
         end
 
@@ -83,11 +87,17 @@ module HarmonizerRedis
             other_id = new_id_list[j]
             id = new_id_list[i]
             score = FuzzyCompare.white_similarity(new_phrase, other_phrase) * -1
-            Redis.current.zadd("HarmonizerRedis::Phrase#{id}:similarities", score, other_id)
-            #Redis.current.zadd("HarmonizerRedis::Phrase#{other_id}:similarities", score, id)
+            unless score > -0.2
+              Redis.current.zadd("HarmonizerRedis::Phrase#{id}:similarities", score, other_id)
+              Redis.current.zadd("HarmonizerRedis::Phrase#{other_id}:similarities", score, id)
+            end
           end
         end
       end
+
+
+      Redis.current.sunionstore(content_key, content_key, new_content_key)
+      Redis.current.del(new_content_key)
     end
 
   end
