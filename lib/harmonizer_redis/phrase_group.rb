@@ -66,7 +66,7 @@ module HarmonizerRedis
       Redis.current.sunionstore(destination_word_set, old_word_set, new_word_set)
       #Decrement count of documents word exists in due to combination
       Redis.current.sinter(old_word_set, new_word_set).each do |word|
-        HarmonizerRedis::TfidfTable.decr_doc_count(word)
+        HarmonizerRedis::TfidfTable.decr_doc_freq(word)
       end
 
       self.delete(source_id)
