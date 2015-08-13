@@ -14,18 +14,18 @@ module HarmonizerRedis
     end
 
     def TfidfTable.get_score(word)
-      doc_freq = get_doc_freq(word) || 0
-      word_count = get_count(word) || 0
-      doc_count = Tfidf.doc_count
+      doc_freq = TfidfTable.get_doc_freq(word)
+      word_count = TfidfTable.get_count(word)
+      doc_count = TfidfTable.doc_count
       Math.log(word_count.to_f + 1.0) * Math.log(doc_count / (doc_freq + 1.0))
     end
 
     def TfidfTable.get_doc_freq(word)
-      Redis.current.get(word_doc_freq_key(word))
+      Redis.current.get(word_doc_freq_key(word)).to_f
     end
 
     def TfidfTable.get_count(word)
-      Redis.current.get(word_doc_freq_key(word))
+      Redis.current.get(word_count_key(word)).to_f
     end
 
     def TfidfTable.decr_doc_freq(word)
@@ -33,11 +33,11 @@ module HarmonizerRedis
     end
 
     def TfidfTable.doc_count
-      Redis.current.get("#{self}:doc_count")
+      Redis.current.get("#{self}:doc_count").to_i
     end
 
     def TfidfTable.incr_doc_count
-      Redis.current.incr("#{self}::TfidfTable:doc_count")
+      Redis.current.incr("#{self}:doc_count")
     end
 
     def TfidfTable.word_doc_freq_key(word)
