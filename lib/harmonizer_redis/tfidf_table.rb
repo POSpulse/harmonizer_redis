@@ -19,7 +19,7 @@ module HarmonizerRedis
       Math.log(doc_count / (doc_freq + 1.0))
     end
 
-    def TfidfTable.get_matrix(phrase_content)
+    def TfidfTable.calc_matrix(phrase_content)
       matrix = Hash.new(0.0)
       phrase_content.split.each do |word|
         matrix[word] += 1.0
@@ -35,6 +35,14 @@ module HarmonizerRedis
         matrix[word] = value / Math::sqrt(norm_factor_sqrd)
       end
       matrix
+    end
+
+    def TfidfTable.cos_similarity(matrix_a, matrix_b)
+      similarity = 0.0
+      matrix_a.each do |word, value|
+        similarity += (value * matrix_b[word])
+      end
+      similarity
     end
 
     def TfidfTable.get_doc_freq(word)

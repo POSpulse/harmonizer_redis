@@ -33,10 +33,18 @@ describe HarmonizerRedis::TfidfTable do
   end
 
   it 'should calculate score for a phrase' do
-    matrix = HarmonizerRedis::TfidfTable.get_matrix('this is a test')
+    matrix = HarmonizerRedis::TfidfTable.calc_matrix('this is a test')
     expect(matrix.length).to eq(4)
     matrix.each do |word, score|
       score != 0.0
     end
+  end
+
+  it 'should calculate phrase similarity' do
+    matrix_a = HarmonizerRedis::TfidfTable.calc_matrix('this is testing')
+    matrix_b = HarmonizerRedis::TfidfTable.calc_matrix('test is this')
+    cos_similarity = HarmonizerRedis::TfidfTable.cos_similarity(matrix_a, matrix_b)
+    expect(cos_similarity).to be > 0.0
+    expect(cos_similarity).to be < 1.0
   end
 end
