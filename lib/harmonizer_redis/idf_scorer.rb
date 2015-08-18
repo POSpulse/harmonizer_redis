@@ -37,10 +37,51 @@ module HarmonizerRedis
       matrix
     end
 
+    # Used for soft cosine similarity
+    def IdfScorer.calc_soft_matrix(phrase_content)
+      matrix = Hash.new(0.0)
+      phrase_content.split.each do |word|
+        matrix[word] += 1.0
+      end
+
+      matrix.each do |word, count|
+        updated = (1.0 + Math::log10(count)) * IdfScorer.get_score(word)
+        matrix[word] = updated
+      end
+      #calculate normalization factor
+      norm_factor_sqrd = 0.0
+      matrix.each do |word_a, value_a|
+        matrix.each do |word_b, value_b|
+          similarity = FuzzyCompare.white_similarity(word_a, word_b)
+          norm_factor_sqrd += (similarity * value_a * value_b)
+        end
+      end
+      #normalize
+      matrix.each do |word, value|
+        matrix[word] = value / Math::sqrt(norm_factor_sqrd)
+      end
+      matrix
+    end
+
     def IdfScorer.cos_similarity(matrix_a, matrix_b)
       similarity = 0.0
       matrix_a.each do |word, value|
         similarity += (value * matrix_b[word])
+      end
+      similarity
+    end
+
+    def IdfScorer.soft_cos_similarity(matrix_a, matrix_b)
+      similarity = 0.0
+      matrix_a.each do |word_a, value_a|
+        matrix_b.each do |word_b, value_b|
+          if word_a != word_b
+            white_similarity = FuzzyCompare.white_similarity(word_a, word_b)
+          else
+            white_similarity = 1.0
+          end
+          similarity += (white_similarity * value_a * value_b)
+        end
       end
       similarity
     end

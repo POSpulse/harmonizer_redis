@@ -8,7 +8,7 @@ module HarmonizerRedis
 
     def save
       super()
-      Redis.current.set("#{self.class}:#{@id}:matrix", Marshal.dump(IdfScorer.calc_matrix(@content)))
+      Redis.current.set("#{self.class}:#{@id}:matrix", Marshal.dump(IdfScorer.calc_soft_matrix(@content)))
       Redis.current.set("#{self.class}:[#{@content}]", "#{@id}")
       Redis.current.sadd("#{self.class}:new_set", "#{@id}")
       new_phrase_group = HarmonizerRedis::PhraseGroup.new(@id)
@@ -56,11 +56,13 @@ module HarmonizerRedis
         (idf_similarity + white_similarity) * -0.5
       end
 
+      def calc_soft_pair_similarity(phrase_a_matrix, phrase_b_matrix)
+        IdfScorer.soft_cos_similarity(phrase_a_matrix, phrase_b_matrix)
+      end
+
       def batch_calc_similarities
         new_id_list = Redis.current.smembers("#{self}:new_set")
         old_id_list = Redis.current.smembers("#{self}:old_set")
-        new_phrase_list = new_id_list.map { |x| self.get_content(x) }
-        old_phrase_list = old_id_list.map { |x| self.get_content(x) }
         new_matrix_list = new_id_list.map { |x| self.get_matrix(x) }
         old_matrix_list = old_id_list.map { |x| self.get_matrix(x) }
 
@@ -69,8 +71,7 @@ module HarmonizerRedis
             (0...old_id_list.length).each do |j|
               id_x = new_id_list[i]
               id_y = old_id_list[j]
-              score = self.calc_pair_similarity(new_phrase_list[i], old_phrase_list[j],
-                                                new_matrix_list[i], old_matrix_list[j])
+              score = self.calc_soft_pair_similarity(new_matrix_list[i], old_matrix_list[j])
               unless score > -0.2
                 Redis.current.zadd("HarmonizerRedis::Phrase:#{id_x}:similarities", score, id_y)
                 Redis.current.zadd("HarmonizerRedis::Phrase:#{id_y}:similarities", score, id_x)
@@ -82,8 +83,7 @@ module HarmonizerRedis
             (i + 1...new_id_list.length).each do |j|
               id_x = new_id_list[i]
               id_y = new_id_list[j]
-              score = self.calc_pair_similarity(new_phrase_list[i], new_phrase_list[j],
-                                                new_matrix_list[i], new_matrix_list[j])
+              score = self.calc_soft_pair_similarity(new_matrix_list[i], new_matrix_list[j])
               unless score > -0.2
                 Redis.current.zadd("HarmonizerRedis::Phrase:#{id_x}:similarities", score, id_y)
                 Redis.current.zadd("HarmonizerRedis::Phrase:#{id_y}:similarities", score, id_x)
