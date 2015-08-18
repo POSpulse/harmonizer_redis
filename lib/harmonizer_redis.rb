@@ -5,6 +5,8 @@ require 'harmonizer_redis/phrase'
 require 'harmonizer_redis/phrase_group'
 require 'harmonizer_redis/idf_scorer'
 require 'active_support/all'
+require 'fuzzy_compare'
+require 'redis'
 
 module HarmonizerRedis
   ###String PreProcessing

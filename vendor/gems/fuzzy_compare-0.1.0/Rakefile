@@ -1,9 +1,0 @@
-require "bundler/gem_tasks"
-
-require 'rake/extensiontask'
-
-Rake::ExtensionTask.new('fuzzy_compare') do |extension|
-  extension.lib_dir = 'lib/fuzzy_compare'
-end
-
-task :build => [:clean, :compile]
