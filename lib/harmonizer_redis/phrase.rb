@@ -8,7 +8,7 @@ module HarmonizerRedis
 
     def save
       super()
-      Redis.current.set("#{self.class}:#{@id}:matrix", Marshal.dump(TfidfTable.calc_matrix(@content)))
+      Redis.current.set("#{self.class}:#{@id}:matrix", Marshal.dump(IdfScorer.calc_matrix(@content)))
       Redis.current.set("#{self.class}:[#{@content}]", "#{@id}")
       Redis.current.sadd("#{self.class}:new_set", "#{@id}")
       new_phrase_group = HarmonizerRedis::PhraseGroup.new(@id)
@@ -51,7 +51,7 @@ module HarmonizerRedis
       end
 
       def calc_pair_similarity(phrase_a, phrase_b, phrase_a_matrix, phrase_b_matrix)
-        idf_similarity = TfidfTable.cos_similarity(phrase_a_matrix, phrase_b_matrix)
+        idf_similarity = IdfScorer.cos_similarity(phrase_a_matrix, phrase_b_matrix)
         white_similarity = FuzzyCompare.white_similarity(phrase_a, phrase_b)
         (idf_similarity + white_similarity) * -0.5
       end

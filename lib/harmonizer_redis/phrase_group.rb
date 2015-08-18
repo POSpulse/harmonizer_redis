@@ -12,7 +12,7 @@ module HarmonizerRedis
       super()
       Redis.current.sadd("#{self.class}:#{@id}:phrase_set", @init_phrase_id)
       HarmonizerRedis::Phrase.set_phrase_group(@init_phrase_id, @id)
-      HarmonizerRedis::TfidfTable.add_document(@init_phrase_id)
+      HarmonizerRedis::IdfScorer.add_document(@init_phrase_id)
       Redis.current.pipelined do
         @label.split.each do |word|
           Redis.current.sadd("#{self.class}:#{@id}:word_set", word)
@@ -66,7 +66,7 @@ module HarmonizerRedis
       Redis.current.sunionstore(destination_word_set, old_word_set, new_word_set)
       #Decrement count of documents word exists in due to combination
       Redis.current.sinter(old_word_set, new_word_set).each do |word|
-        HarmonizerRedis::TfidfTable.decr_doc_freq(word)
+        HarmonizerRedis::IdfScorer.decr_doc_freq(word)
       end
 
       self.delete(source_id)
