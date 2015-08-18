@@ -8,15 +8,11 @@ module HarmonizerRedis
 
     def save
       super()
+      Redis.current.set("#{self.class}:#{@id}:matrix", Marshal.dump(IdfScorer.calc_matrix(@content)))
       Redis.current.set("#{self.class}:[#{@content}]", "#{@id}")
-      Redis.current.sadd('HarmonizerRedis::Phrase:new_content_set', @content)
+      Redis.current.sadd("#{self.class}:new_set", "#{@id}")
       new_phrase_group = HarmonizerRedis::PhraseGroup.new(@id)
       new_phrase_group.save
-    end
-
-    def save_and_calculate
-      self.save
-      self.calculate_similarities
     end
 
     class << self
@@ -38,67 +34,67 @@ module HarmonizerRedis
         Redis.current.set("#{self}:#{phrase_id}:phrase_group", phrase_group_id)
       end
 
+      #get matrix (in the form of a hash 'word' => value) for phrase with phrase_id
+      def get_matrix(phrase_id)
+        byte_stream = Redis.current.get("#{self}:#{phrase_id}:matrix")
+        if byte_stream
+          Marshal.load(byte_stream)
+        else
+          nil
+        end
+      end
+
       def merge_phrases(phrase_one_id, phrase_two_id, label = nil)
         phrase_one_group_id = HarmonizerRedis::Phrase.get_phrase_group(phrase_one_id)
         phrase_two_group_id = HarmonizerRedis::Phrase.get_phrase_group(phrase_two_id)
         HarmonizerRedis::PhraseGroup.merge(phrase_one_group_id, phrase_two_group_id, label)
       end
-    end
 
-    def calculate_similarities
-      phrase_list = Redis.current.smembers('HarmonizerRedis::Phrase:content_set')
-      id_list = []
-      phrase_list.each do |phrase|
-        id_list << self.class.find_by_content(phrase)
+      def calc_pair_similarity(phrase_a, phrase_b, phrase_a_matrix, phrase_b_matrix)
+        idf_similarity = IdfScorer.cos_similarity(phrase_a_matrix, phrase_b_matrix)
+        white_similarity = FuzzyCompare.white_similarity(phrase_a, phrase_b)
+        (idf_similarity + white_similarity) * -0.5
       end
-      Redis.current.pipelined do
-        phrase_list.each_with_index do |phrase, index|
-          score = FuzzyCompare.white_similarity(@content, phrase)
-          other_id = id_list[index]
-          Redis.current.zadd("HarmonizerRedis::Phrase:#{id}:similarity_hash", other_id, score)
-          Redis.current.zadd("HarmonizerRedis::Phrase:#{other_id}:similarity_hash", @id, score)
-        end
-      end
-    end
 
-    def self.batch_calc_similarities
-      content_key = 'HarmonizerRedis::Phrase:content_set'
-      new_content_key = 'HarmonizerRedis::Phrase:new_content_set'
-      phrase_list = Redis.current.smembers(content_key)
-      new_phrase_list = Redis.current.smembers(new_content_key)
-      id_list = phrase_list.map { |x| self.find_by_content(x)}
-      new_id_list = new_phrase_list.map { |x| self.find_by_content(x)}
-      Redis.current.pipelined do
-        new_phrase_list.each_with_index do |new_phrase, i|
-          phrase_list.each_with_index do |phrase, j|
-            other_id = id_list[j]
-            id = id_list[i]
-            score = FuzzyCompare.white_similarity(new_phrase, phrase) * -1
-            unless score > -0.2
-              Redis.current.zadd("HarmonizerRedis::Phrase#{id}:similarities", score, other_id)
-              Redis.current.zadd("HarmonizerRedis::Phrase#{other_id}:similarities", score, id)
+      def batch_calc_similarities
+        new_id_list = Redis.current.smembers("#{self}:new_set")
+        old_id_list = Redis.current.smembers("#{self}:old_set")
+        new_phrase_list = new_id_list.map { |x| self.get_content(x) }
+        old_phrase_list = old_id_list.map { |x| self.get_content(x) }
+        new_matrix_list = new_id_list.map { |x| self.get_matrix(x) }
+        old_matrix_list = old_id_list.map { |x| self.get_matrix(x) }
+
+        Redis.current.pipelined do
+          (0...new_id_list.length).each do |i|
+            (0...old_id_list.length).each do |j|
+              id_x = new_id_list[i]
+              id_y = old_id_list[j]
+              score = self.calc_pair_similarity(new_phrase_list[i], old_phrase_list[j],
+                                                new_matrix_list[i], old_matrix_list[j])
+              unless score > -0.2
+                Redis.current.zadd("HarmonizerRedis::Phrase:#{id_x}:similarities", score, id_y)
+                Redis.current.zadd("HarmonizerRedis::Phrase:#{id_y}:similarities", score, id_x)
+              end
+            end
+          end
+
+          (0...new_id_list.length).each do |i|
+            (i + 1...new_id_list.length).each do |j|
+              id_x = new_id_list[i]
+              id_y = new_id_list[j]
+              score = self.calc_pair_similarity(new_phrase_list[i], new_phrase_list[j],
+                                                new_matrix_list[i], new_matrix_list[j])
+              unless score > -0.2
+                Redis.current.zadd("HarmonizerRedis::Phrase:#{id_x}:similarities", score, id_y)
+                Redis.current.zadd("HarmonizerRedis::Phrase:#{id_y}:similarities", score, id_x)
+              end
             end
           end
         end
 
-        new_phrase_list.each_with_index do |new_phrase, i|
-          (i + 1...new_phrase_list.length).each do |j|
-            other_phrase = new_phrase_list[j]
-            other_id = new_id_list[j]
-            id = new_id_list[i]
-            score = FuzzyCompare.white_similarity(new_phrase, other_phrase) * -1
-            unless score > -0.2
-              Redis.current.zadd("HarmonizerRedis::Phrase#{id}:similarities", score, other_id)
-              Redis.current.zadd("HarmonizerRedis::Phrase#{other_id}:similarities", score, id)
-            end
-          end
-        end
+        Redis.current.sunionstore("#{self}:old_set", "#{self}:old_set", "#{self}:new_set")
+        Redis.current.del("#{self}:new_set")
       end
-
-
-      Redis.current.sunionstore(content_key, content_key, new_content_key)
-      Redis.current.del(new_content_key)
     end
-
   end
 end
