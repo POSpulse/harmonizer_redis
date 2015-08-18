@@ -28,6 +28,15 @@ describe HarmonizerRedis::TfidfTable do
   end
 
   it 'should calculate the tfidf for a word' do
+    expect(HarmonizerRedis::TfidfTable.get_score('test')).to eq(0.0)
+    expect(HarmonizerRedis::TfidfTable.get_score('testing')).to be_within(0.01).of(0.405)
+  end
 
+  it 'should calculate score for a phrase' do
+    matrix = HarmonizerRedis::TfidfTable.get_matrix('this is a test')
+    expect(matrix.length).to eq(4)
+    matrix.each do |word, score|
+      score != 0.0
+    end
   end
 end

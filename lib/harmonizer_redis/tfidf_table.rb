@@ -15,9 +15,26 @@ module HarmonizerRedis
 
     def TfidfTable.get_score(word)
       doc_freq = TfidfTable.get_doc_freq(word)
-      word_count = TfidfTable.get_count(word)
       doc_count = TfidfTable.doc_count
-      Math.log(word_count.to_f + 1.0) * Math.log(doc_count / (doc_freq + 1.0))
+      Math.log(doc_count / (doc_freq + 1.0))
+    end
+
+    def TfidfTable.get_matrix(phrase_content)
+      matrix = Hash.new(0.0)
+      phrase_content.split.each do |word|
+        matrix[word] += 1.0
+      end
+      norm_factor_sqrd = 0.0
+      matrix.each do |word, count|
+        updated = (1.0 + Math::log10(count)) * TfidfTable.get_score(word)
+        matrix[word] = updated
+        norm_factor_sqrd += (updated ** 2)
+      end
+      #now normalize
+      matrix.each do |word, value|
+        matrix[word] = value / Math::sqrt(norm_factor_sqrd)
+      end
+      matrix
     end
 
     def TfidfTable.get_doc_freq(word)
@@ -30,6 +47,7 @@ module HarmonizerRedis
 
     def TfidfTable.decr_doc_freq(word)
       Redis.current.decr(word_doc_freq_key(word))
+      Redis.current.decr("#{self}:doc_count")
     end
 
     def TfidfTable.doc_count
