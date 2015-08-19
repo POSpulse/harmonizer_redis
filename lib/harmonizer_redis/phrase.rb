@@ -52,7 +52,7 @@ module HarmonizerRedis
 
       def calc_pair_similarity(phrase_a, phrase_b, phrase_a_matrix, phrase_b_matrix)
         idf_similarity = IdfScorer.cos_similarity(phrase_a_matrix, phrase_b_matrix)
-        white_similarity = FuzzyCompare.white_similarity(phrase_a, phrase_b)
+        white_similarity = WhiteSimilarity.score(phrase_a, phrase_b)
         (idf_similarity + white_similarity) * -0.5
       end
 
@@ -71,7 +71,7 @@ module HarmonizerRedis
             (0...old_id_list.length).each do |j|
               id_x = new_id_list[i]
               id_y = old_id_list[j]
-              score = self.calc_soft_pair_similarity(new_matrix_list[i], old_matrix_list[j])
+              score = self.calc_soft_pair_similarity(new_matrix_list[i], old_matrix_list[j]) * -1
               unless score > -0.2
                 Redis.current.zadd("HarmonizerRedis::Phrase:#{id_x}:similarities", score, id_y)
                 Redis.current.zadd("HarmonizerRedis::Phrase:#{id_y}:similarities", score, id_x)
@@ -83,7 +83,7 @@ module HarmonizerRedis
             (i + 1...new_id_list.length).each do |j|
               id_x = new_id_list[i]
               id_y = new_id_list[j]
-              score = self.calc_soft_pair_similarity(new_matrix_list[i], new_matrix_list[j])
+              score = self.calc_soft_pair_similarity(new_matrix_list[i], new_matrix_list[j]) * -1
               unless score > -0.2
                 Redis.current.zadd("HarmonizerRedis::Phrase:#{id_x}:similarities", score, id_y)
                 Redis.current.zadd("HarmonizerRedis::Phrase:#{id_y}:similarities", score, id_x)

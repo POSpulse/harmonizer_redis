@@ -52,7 +52,7 @@ module HarmonizerRedis
       norm_factor_sqrd = 0.0
       matrix.each do |word_a, value_a|
         matrix.each do |word_b, value_b|
-          similarity = FuzzyCompare.white_similarity(word_a, word_b)
+          similarity = WhiteSimilarity.score(word_a, word_b)
           norm_factor_sqrd += (similarity * value_a * value_b)
         end
       end
@@ -76,7 +76,7 @@ module HarmonizerRedis
       matrix_a.each do |word_a, value_a|
         matrix_b.each do |word_b, value_b|
           if word_a != word_b
-            white_similarity = FuzzyCompare.white_similarity(word_a, word_b)
+            white_similarity = WhiteSimilarity.score(word_a, word_b)
           else
             white_similarity = 1.0
           end

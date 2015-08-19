@@ -29,6 +29,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "redis"
   spec.add_dependency "activesupport"
+  spec.extensions    = ["ext/white_similarity/extconf.rb"]
 
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "bundler", "~> 1.10"
