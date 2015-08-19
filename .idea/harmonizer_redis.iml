@@ -13,24 +13,6 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library">
-      <library name="fuzzy_compare (v0.1.0, /Users/tianwang/Documents/POSpulse/grouping_scripts/fuzzy_compare) [path][gem]">
-        <CLASSES>
-          <root url="file://$MODULE_DIR$/../grouping_scripts/fuzzy_compare/bin" />
-          <root url="file://$MODULE_DIR$/../grouping_scripts/fuzzy_compare/ext" />
-          <root url="file://$MODULE_DIR$/../grouping_scripts/fuzzy_compare/lib" />
-          <root url="file://$MODULE_DIR$/../grouping_scripts/fuzzy_compare/pkg" />
-          <root url="file://$MODULE_DIR$/../grouping_scripts/fuzzy_compare/tmp" />
-        </CLASSES>
-        <SOURCES>
-          <root url="file://$MODULE_DIR$/../grouping_scripts/fuzzy_compare/bin" />
-          <root url="file://$MODULE_DIR$/../grouping_scripts/fuzzy_compare/ext" />
-          <root url="file://$MODULE_DIR$/../grouping_scripts/fuzzy_compare/lib" />
-          <root url="file://$MODULE_DIR$/../grouping_scripts/fuzzy_compare/pkg" />
-          <root url="file://$MODULE_DIR$/../grouping_scripts/fuzzy_compare/tmp" />
-        </SOURCES>
-      </library>
-    </orderEntry>
     <orderEntry type="library" scope="PROVIDED" name="activesupport (v4.1.12, RVM: ruby-2.2.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="bundler (v1.10.4, RVM: ruby-2.2.0) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="diff-lcs (v1.2.5, RVM: ruby-2.2.0) [gem]" level="application" />
