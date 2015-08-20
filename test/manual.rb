@@ -4,7 +4,7 @@ Redis.current.flushall
 douglas_path = '/Users/tianwang/Documents/POSpulse/shopscout_data/douglas/all.txt'
 ey_path = '/Users/tianwang/Documents/POSpulse/shopscout_data/ey/raw_store_name_input.txt'
 to_add = []
-file = File.open(ey_path, 'r')
+file = File.open(douglas_path, 'r')
 file.each_line do |line|
   to_add << line
 end
