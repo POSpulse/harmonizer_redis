@@ -28,12 +28,11 @@ describe HarmonizerRedis::IdfScorer do
   end
 
   it 'should calculate the tfidf for a word' do
-    expect(HarmonizerRedis::IdfScorer.get_score('test')).to eq(0.0)
-    expect(HarmonizerRedis::IdfScorer.get_score('testing')).to be_within(0.01).of(0.405)
+    expect(HarmonizerRedis::IdfScorer.get_score('testing')).to be_within(0.01).of(1.071)
   end
 
   it 'should calculate score for a phrase' do
-    matrix = HarmonizerRedis::IdfScorer.calc_matrix('this is a test')
+    matrix = HarmonizerRedis::IdfScorer.calc_soft_matrix('this is a test')
     expect(matrix.length).to eq(4)
     matrix.each do |word, score|
       score != 0.0
@@ -41,9 +40,11 @@ describe HarmonizerRedis::IdfScorer do
   end
 
   it 'should calculate phrase similarity' do
-    matrix_a = HarmonizerRedis::IdfScorer.calc_matrix('this is testing')
-    matrix_b = HarmonizerRedis::IdfScorer.calc_matrix('test is this')
-    cos_similarity = HarmonizerRedis::IdfScorer.cos_similarity(matrix_a, matrix_b)
+    matrix_a = HarmonizerRedis::IdfScorer.calc_soft_matrix('this is testing')
+    matrix_b = HarmonizerRedis::IdfScorer.calc_soft_matrix('test is this')
+    matrix_a_dump = HarmonizerRedis::IdfScorer.serialize_matrix(matrix_a)
+    matrix_b_dump = HarmonizerRedis::IdfScorer.serialize_matrix(matrix_b)
+    cos_similarity = WhiteSimilarity.soft_cos_similarity(matrix_a_dump, matrix_b_dump)
     expect(cos_similarity).to be > 0.0
     expect(cos_similarity).to be < 1.0
   end
