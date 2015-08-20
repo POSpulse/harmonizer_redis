@@ -8,11 +8,13 @@ module HarmonizerRedis
 
     def save
       super()
-      Redis.current.set("#{self.class}:#{@id}:matrix", Marshal.dump(IdfScorer.calc_soft_matrix(@content)))
-      Redis.current.set("#{self.class}:[#{@content}]", "#{@id}")
-      Redis.current.sadd("#{self.class}:new_set", "#{@id}")
       new_phrase_group = HarmonizerRedis::PhraseGroup.new(@id)
       new_phrase_group.save
+      Redis.current.set("#{self.class}:#{@id}:matrix",
+                        IdfScorer.serialize_matrix(IdfScorer.calc_soft_matrix(@content)))
+      Redis.current.set("#{self.class}:[#{@content}]", "#{@id}")
+      Redis.current.sadd("#{self.class}:new_set", "#{@id}")
+
     end
 
     class << self
@@ -36,9 +38,9 @@ module HarmonizerRedis
 
       #get matrix (in the form of a hash 'word' => value) for phrase with phrase_id
       def get_matrix(phrase_id)
-        byte_stream = Redis.current.get("#{self}:#{phrase_id}:matrix")
-        if byte_stream
-          Marshal.load(byte_stream)
+        serialized = Redis.current.get("#{self}:#{phrase_id}:matrix")
+        if serialized
+          serialized
         else
           nil
         end
@@ -57,7 +59,7 @@ module HarmonizerRedis
       end
 
       def calc_soft_pair_similarity(phrase_a_matrix, phrase_b_matrix)
-        IdfScorer.soft_cos_similarity(phrase_a_matrix, phrase_b_matrix)
+        WhiteSimilarity.soft_cos_similarity(phrase_a_matrix, phrase_b_matrix)
       end
 
       def batch_calc_similarities

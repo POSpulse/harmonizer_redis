@@ -14,27 +14,35 @@ module HarmonizerRedis
     end
 
     def IdfScorer.get_score(word)
-      doc_freq = IdfScorer.get_doc_freq(word)
-      doc_count = IdfScorer.doc_count
-      Math.log(doc_count / (doc_freq + 1.0))
+      doc_freq = IdfScorer.get_doc_freq(word) + 0.1
+      doc_count = IdfScorer.doc_count + 0.1
+      Math.log(0.1+(doc_count / doc_freq))
     end
+    #
+    # def IdfScorer.calc_matrix(phrase_content)
+    #   matrix = Hash.new(0.0)
+    #   phrase_content.split.each do |word|
+    #     matrix[word] += 1.0
+    #   end
+    #   norm_factor_sqrd = 0.0
+    #   matrix.each do |word, count|
+    #     updated = (1.0 + Math::log10(count)) * IdfScorer.get_score(word)
+    #     matrix[word] = updated
+    #     norm_factor_sqrd += (updated ** 2)
+    #   end
+    #   #now normalize
+    #   matrix.each do |word, value|
+    #     matrix[word] = value / Math::sqrt(norm_factor_sqrd)
+    #   end
+    #   matrix
+    #
+    # end
 
-    def IdfScorer.calc_matrix(phrase_content)
-      matrix = Hash.new(0.0)
-      phrase_content.split.each do |word|
-        matrix[word] += 1.0
-      end
-      norm_factor_sqrd = 0.0
-      matrix.each do |word, count|
-        updated = (1.0 + Math::log10(count)) * IdfScorer.get_score(word)
-        matrix[word] = updated
-        norm_factor_sqrd += (updated ** 2)
-      end
-      #now normalize
-      matrix.each do |word, value|
-        matrix[word] = value / Math::sqrt(norm_factor_sqrd)
-      end
-      matrix
+    # first char is length of phrase (capped at 255 words). Each word(key) is separated
+    # by a comma and the keys and values are separated by a vertical bar
+    def IdfScorer.serialize_matrix(matrix)
+      serialized = "#{matrix.length.chr}#{matrix.keys.join(',')},#{matrix.values.join(',')}"
+      serialized
     end
 
     # Used for soft cosine similarity
@@ -48,6 +56,7 @@ module HarmonizerRedis
         updated = (1.0 + Math::log10(count)) * IdfScorer.get_score(word)
         matrix[word] = updated
       end
+
       #calculate normalization factor
       norm_factor_sqrd = 0.0
       matrix.each do |word_a, value_a|
@@ -56,9 +65,11 @@ module HarmonizerRedis
           norm_factor_sqrd += (similarity * value_a * value_b)
         end
       end
+
       #normalize
+      factor = Math::sqrt(norm_factor_sqrd)
       matrix.each do |word, value|
-        matrix[word] = value / Math::sqrt(norm_factor_sqrd)
+        matrix[word] = value / factor
       end
       matrix
     end
@@ -100,7 +111,7 @@ module HarmonizerRedis
     end
 
     def IdfScorer.doc_count
-      Redis.current.get("#{self}:doc_count").to_i
+      Redis.current.get("#{self}:doc_count").to_f
     end
 
     def IdfScorer.incr_doc_count
