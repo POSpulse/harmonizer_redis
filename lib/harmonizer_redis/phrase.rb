@@ -46,10 +46,14 @@ module HarmonizerRedis
         end
       end
 
+      def in_same_group?(phrase_a_id, phrase_b_id)
+        self.get_phrase_group(phrase_a_id) == self.get_phrase_group(phrase_b_id)
+      end
+
       def merge_phrases(phrase_one_id, phrase_two_id, label = nil)
-        phrase_one_group_id = HarmonizerRedis::Phrase.get_phrase_group(phrase_one_id)
-        phrase_two_group_id = HarmonizerRedis::Phrase.get_phrase_group(phrase_two_id)
-        HarmonizerRedis::PhraseGroup.merge(phrase_one_group_id, phrase_two_group_id, label)
+        phrase_one_group_id = self.get_phrase_group(phrase_one_id)
+        phrase_two_group_id = self.get_phrase_group(phrase_two_id)
+        self.merge(phrase_one_group_id, phrase_two_group_id, label)
       end
 
       def calc_pair_similarity(phrase_a, phrase_b, phrase_a_matrix, phrase_b_matrix)
@@ -73,8 +77,8 @@ module HarmonizerRedis
             (0...old_id_list.length).each do |j|
               id_x = new_id_list[i]
               id_y = old_id_list[j]
-              score = self.calc_soft_pair_similarity(new_matrix_list[i], old_matrix_list[j]) * -1
-              unless score > -0.2
+              score = self.calc_soft_pair_similarity(new_matrix_list[i], old_matrix_list[j])
+              unless score < 0.2
                 Redis.current.zadd("HarmonizerRedis::Phrase:#{id_x}:similarities", score, id_y)
                 Redis.current.zadd("HarmonizerRedis::Phrase:#{id_y}:similarities", score, id_x)
               end
@@ -85,8 +89,8 @@ module HarmonizerRedis
             (i + 1...new_id_list.length).each do |j|
               id_x = new_id_list[i]
               id_y = new_id_list[j]
-              score = self.calc_soft_pair_similarity(new_matrix_list[i], new_matrix_list[j]) * -1
-              unless score > -0.2
+              score = self.calc_soft_pair_similarity(new_matrix_list[i], new_matrix_list[j])
+              unless score < 0.2
                 Redis.current.zadd("HarmonizerRedis::Phrase:#{id_x}:similarities", score, id_y)
                 Redis.current.zadd("HarmonizerRedis::Phrase:#{id_y}:similarities", score, id_x)
               end

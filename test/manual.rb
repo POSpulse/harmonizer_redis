@@ -20,7 +20,7 @@ HarmonizerRedis::Phrase.batch_calc_similarities
 def get_similar_ones(phrase)
   phrase_id = HarmonizerRedis::Phrase.find_by_content(phrase)
   return false if phrase_id.nil?
-  id_list = Redis.current.zrange("HarmonizerRedis::Phrase:#{phrase_id}:similarities", 0, 20, :with_scores => true)
+  id_list = Redis.current.zrevrange("HarmonizerRedis::Phrase:#{phrase_id}:similarities", 0, 20, :with_scores => true)
   id_list.each do |phrase_id, score|
     puts "#{HarmonizerRedis::Phrase.get_content(phrase_id)}\t#{score}"
   end

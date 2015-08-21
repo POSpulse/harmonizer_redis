@@ -18,25 +18,6 @@ module HarmonizerRedis
       doc_count = IdfScorer.doc_count + 0.1
       Math.log(0.1+(doc_count / doc_freq))
     end
-    #
-    # def IdfScorer.calc_matrix(phrase_content)
-    #   matrix = Hash.new(0.0)
-    #   phrase_content.split.each do |word|
-    #     matrix[word] += 1.0
-    #   end
-    #   norm_factor_sqrd = 0.0
-    #   matrix.each do |word, count|
-    #     updated = (1.0 + Math::log10(count)) * IdfScorer.get_score(word)
-    #     matrix[word] = updated
-    #     norm_factor_sqrd += (updated ** 2)
-    #   end
-    #   #now normalize
-    #   matrix.each do |word, value|
-    #     matrix[word] = value / Math::sqrt(norm_factor_sqrd)
-    #   end
-    #   matrix
-    #
-    # end
 
     # first char is length of phrase (capped at 255 words). Each word(key) is separated
     # by a comma and the keys and values are separated by a vertical bar
