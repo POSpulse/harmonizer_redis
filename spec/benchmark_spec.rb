@@ -3,7 +3,7 @@ require 'benchmark'
 
 describe 'Benchmarking' do
   before :all do
-    Redis.current = Redis.new
+    Redis.current = Redis.new(:driver => :hiredis)
   end
 
   before :each do

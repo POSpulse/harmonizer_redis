@@ -100,6 +100,7 @@ module HarmonizerRedis
 
         Redis.current.sunionstore("#{self}:old_set", "#{self}:old_set", "#{self}:new_set")
         Redis.current.del("#{self}:new_set")
+
       end
     end
   end

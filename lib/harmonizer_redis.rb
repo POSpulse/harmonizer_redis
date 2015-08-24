@@ -6,6 +6,7 @@ require 'harmonizer_redis/phrase_group'
 require 'harmonizer_redis/idf_scorer'
 require 'harmonizer_redis/white_similarity'
 require 'active_support/all'
+require 'redis/connection/hiredis'
 require 'redis'
 
 include WhiteSimilarity

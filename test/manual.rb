@@ -1,5 +1,7 @@
 require 'harmonizer_redis'
 
+Redis.current = Redis.new(:driver => :hiredis)
+
 Redis.current.flushall
 douglas_path = '/Users/tianwang/Documents/POSpulse/shopscout_data/douglas/all.txt'
 ey_path = '/Users/tianwang/Documents/POSpulse/shopscout_data/ey/raw_store_name_input.txt'
@@ -15,7 +17,12 @@ to_add.each_with_index do |text, index|
   new_linkage.save
 end
 
-HarmonizerRedis::Phrase.batch_calc_similarities
+time = Benchmark.realtime do
+  HarmonizerRedis::Phrase.batch_calc_similarities
+end
+
+puts "Time: #{time}"
+
 
 def get_similar_ones(phrase)
   phrase_id = HarmonizerRedis::Phrase.find_by_content(phrase)
@@ -27,9 +34,9 @@ def get_similar_ones(phrase)
 end
 
 puts 'Done. Now enter tests. q to quit'
-input = gets.chomp
-while input != 'q' do
-  get_similar_ones(input)
-  puts 'ask again'
-  input = gets.chomp
-end
+# input = gets.chomp
+# while input != 'q' do
+#   get_similar_ones(input)
+#   puts 'ask again'
+#   input = gets.chomp
+# end

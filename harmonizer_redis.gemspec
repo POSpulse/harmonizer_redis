@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "redis"
+  spec.add_dependency "hiredis"
   spec.add_dependency "activesupport"
   spec.extensions    = ["ext/white_similarity/extconf.rb"]
 
