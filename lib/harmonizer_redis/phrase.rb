@@ -10,8 +10,6 @@ module HarmonizerRedis
       super()
       new_phrase_group = HarmonizerRedis::PhraseGroup.new(@id)
       new_phrase_group.save
-      Redis.current.set("#{self.class}:#{@id}:matrix",
-                        IdfScorer.serialize_matrix(IdfScorer.calc_soft_matrix(@content)))
       Redis.current.set("#{self.class}:[#{@content}]", "#{@id}")
       Redis.current.sadd("#{self.class}:new_set", "#{@id}")
 
@@ -69,6 +67,13 @@ module HarmonizerRedis
       def batch_calc_similarities
         new_id_list = Redis.current.smembers("#{self}:new_set")
         old_id_list = Redis.current.smembers("#{self}:old_set")
+
+        new_id_list.each do |id|
+          content = self.get_content(id)
+          Redis.current.set("#{self}:#{id}:matrix",
+                IdfScorer.serialize_matrix(IdfScorer.calc_soft_matrix(content)))
+        end
+
         new_matrix_list = new_id_list.map { |x| self.get_matrix(x) }
         old_matrix_list = old_id_list.map { |x| self.get_matrix(x) }
 
