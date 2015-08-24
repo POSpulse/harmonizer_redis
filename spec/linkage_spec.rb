@@ -26,7 +26,7 @@ describe HarmonizerRedis::Linkage do
     @old_phrase = HarmonizerRedis::Linkage.new(id: 1, content: '  tEsTiNg ')
     @old_phrase.save
     @linkage.save
-    expect(Redis.current.get("#{@linkage.class}:#{@linkage.id}:phrase")).to eq('HarmonizerRedis::Phrase:0')
+    expect(Redis.current.get("#{@linkage.class}:#{@linkage.id}:phrase")).to eq('0')
     expect(Redis.current.get('HarmonizerRedis::Phrase:0:content')).to eq('testing')
   end
 
@@ -34,7 +34,7 @@ describe HarmonizerRedis::Linkage do
     @old_phrase = HarmonizerRedis::Linkage.new(id: 1, content: 'different')
     @old_phrase.save
     @linkage.save
-    expect(Redis.current.get("#{@linkage.class}:#{@linkage.id}:phrase")).to eq('HarmonizerRedis::Phrase:1')
+    expect(Redis.current.get("#{@linkage.class}:#{@linkage.id}:phrase")).to eq('1')
     expect(Redis.current.get('HarmonizerRedis::Phrase:0:content')).to eq('different')
     expect(Redis.current.get('HarmonizerRedis::Phrase:1:content')).to eq('testing')
   end

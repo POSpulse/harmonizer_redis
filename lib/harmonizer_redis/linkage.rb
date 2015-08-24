@@ -38,11 +38,11 @@ module HarmonizerRedis
       end
 
       def get_phrase_group_id(linkage_id)
-        Phrase.get_phrase_group(get_phrase(linkage_id))
+        Phrase.get_phrase_group(get_phrase(linkage_id)).to_i
       end
 
       def get_phrase(linkage_id)
-        Redis.current.get("#{self}:#{linkage_id}:phrase")
+        Redis.current.get("#{self}:#{linkage_id}:phrase").to_i
       end
 
       def get_similarities(linkage_id, num_phrases)
