@@ -39,8 +39,36 @@ describe HarmonizerRedis::Linkage do
     expect(Redis.current.get('HarmonizerRedis::Phrase:1:content')).to eq('testing')
   end
 
-  it 'should calculate similarities for new content' do
+  it '#merge_with_phrase' do
+    @linkage.save
+    new_linkage = HarmonizerRedis::Linkage.new(id: 6, content: 'testin')
+    new_linkage.save
+    new_phrase_id = HarmonizerRedis::Linkage.get_phrase_id(new_linkage.id)
+    HarmonizerRedis::Linkage.merge_with_phrase(@linkage.id, new_phrase_id)
+    expect(HarmonizerRedis::Linkage.get_phrase_group_id(@linkage.id)).to_not eq(0)
+    expect(HarmonizerRedis::Linkage.get_phrase_group_id(@linkage.id)).to eq(HarmonizerRedis::Linkage.get_phrase_group_id(new_linkage.id))
+  end
+
+  it '#get_true_label and #set_true_label' do
+    @linkage.save
+    expect(HarmonizerRedis::Linkage.get_true_label(@linkage.id)).to eq('testing')
+
+    new_linkage = HarmonizerRedis::Linkage.new(id: 6, content: 'testin')
+    new_linkage.save
+    new_phrase_id = HarmonizerRedis::Linkage.get_phrase_id(new_linkage.id)
+
+    expect(HarmonizerRedis::Linkage.get_true_label(new_linkage.id)).to eq('testin')
+
+    HarmonizerRedis::Linkage.merge_with_phrase(@linkage.id, new_phrase_id)
+
+    expect(HarmonizerRedis::Linkage.get_true_label(new_linkage.id)).to eq(HarmonizerRedis::Linkage.get_true_label(@linkage.id))
+
+    HarmonizerRedis::Linkage.set_true_label(new_linkage.id, 'testinggg')
+
+    expect(HarmonizerRedis::Linkage.get_true_label(new_linkage.id)).to eq('testinggg')
+    expect(HarmonizerRedis::Linkage.get_true_label(@linkage.id)).to eq('testinggg')
 
   end
+
 
 end

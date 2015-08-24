@@ -51,7 +51,7 @@ module HarmonizerRedis
       def merge_phrases(phrase_one_id, phrase_two_id, label = nil)
         phrase_one_group_id = self.get_phrase_group(phrase_one_id)
         phrase_two_group_id = self.get_phrase_group(phrase_two_id)
-        self.merge(phrase_one_group_id, phrase_two_group_id, label)
+        PhraseGroup.merge(phrase_one_group_id, phrase_two_group_id, label)
       end
 
       def calc_pair_similarity(phrase_a, phrase_b, phrase_a_matrix, phrase_b_matrix)

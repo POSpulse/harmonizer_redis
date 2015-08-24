@@ -38,15 +38,15 @@ module HarmonizerRedis
       end
 
       def get_phrase_group_id(linkage_id)
-        Phrase.get_phrase_group(get_phrase(linkage_id)).to_i
+        Phrase.get_phrase_group(get_phrase_id(linkage_id)).to_i
       end
 
-      def get_phrase(linkage_id)
+      def get_phrase_id(linkage_id)
         Redis.current.get("#{self}:#{linkage_id}:phrase").to_i
       end
 
       def get_similarities(linkage_id, num_phrases)
-        own_phrase_id = self.get_phrase(linkage_id)
+        own_phrase_id = self.get_phrase_id(linkage_id)
         phrase_id_list = Redis.current.zrevrange("HarmonizerRedis::Phrase:#{own_phrase_id}",
             0, num_phrases, :with_scores => true)
         phrase_id_list.map do |phrase_id, score|
@@ -58,7 +58,7 @@ module HarmonizerRedis
       end
 
       def merge_with_phrase(linkage_id, foreign_phrase_id)
-        own_phrase_id = self.get_phrase(linkage_id)
+        own_phrase_id = self.get_phrase_id(linkage_id)
         Phrase.merge_phrases(own_phrase_id, foreign_phrase_id)
       end
     end

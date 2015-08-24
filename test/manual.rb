@@ -12,6 +12,11 @@ file.each_line do |line|
 end
 file.close
 
+file = File.open(douglas_path, 'r')
+file.each_line do |line|
+  to_add << line
+end
+
 to_add.each_with_index do |text, index|
   new_linkage = HarmonizerRedis::Linkage.new(id: index, content: text)
   new_linkage.save
