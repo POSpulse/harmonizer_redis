@@ -30,7 +30,9 @@ describe 'Integration Tests' do
 
   it "should allow separate calculations" do
     # Batch calculate similarities
+    my_linkage = HarmonizerRedis::Linkage.find(0)
     HarmonizerRedis.calculate_similarities(2)
+    expect(my_linkage.get_similarities(20)).to eq([])
   end
 
   it "should retrieve similarities for a linkage" do
@@ -43,14 +45,34 @@ describe 'Integration Tests' do
   end
 
   it "should combine linkage's phrase with another phrase" do
+    HarmonizerRedis.calculate_similarities(1)
     my_linkage = HarmonizerRedis::Linkage.find(0)
-    my_linkage.merge_with_phrase(seleciton_id)
+    other_linkage = HarmonizerRedis::Linkage.find(1)
+    my_linkage.merge_with_phrase(1)
+    my_linkage_group = Redis.current.get("HarmonizerRedis::Category:#{my_linkage.category_id}:#{my_linkage.phrase_id}:group")
+    other_linkage_group = Redis.current.get("HarmonizerRedis::Category:#{other_linkage.category_id}:#{other_linkage.phrase_id}:group")
+    expect(my_linkage_group).to eq(other_linkage_group)
+  end
+
+  it "should prevent linkage combos for phrases that are in different categories" do
+    HarmonizerRedis.calculate_similarities(1)
+    my_linkage = HarmonizerRedis::Linkage.find(0)
+    other_linkage = HarmonizerRedis::Linkage.find(5)
+    expect{my_linkage.merge_with_phrase(other_linkage.phrase_id)}.to raise_error("Invalid Phrase ID(s) given!")
+  end
+
+  it "should do nothing if linkage tries to combine with it's own phrase/another phrase in group" do
+    HarmonizerRedis.calculate_similarities(1)
+    my_linkage = HarmonizerRedis::Linkage.find(0)
+    other_linkage = HarmonizerRedis::Linkage.find(1)
+    my_linkage.merge_with_phrase(other_linkage.phrase_id)
+    my_linkage.merge_with_phrase(other_linkage.phrase_id)
+    my_linkage_group = Redis.current.get("HarmonizerRedis::Category:#{my_linkage.category_id}:#{my_linkage.phrase_id}:group")
+    other_linkage_group = Redis.current.get("HarmonizerRedis::Category:#{other_linkage.category_id}:#{other_linkage.phrase_id}:group")
+    expect(Redis.current.smembers(my_linkage_group)).to eq(Redis.current.smembers(other_linkage_group))
   end
 
   it "should get probable labels for a linkage" do
   end
 
-  it "should get similar phrases for combination" do
-
-  end
 end

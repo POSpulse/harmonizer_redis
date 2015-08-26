@@ -3,15 +3,19 @@ module HarmonizerRedis
     attr_reader :id
 
     def initialize(params)
-
-
       unless params[:id]
         raise "id must be given in params"
       end
 
+      if self.is_saved?
+        # Make sure that user does not re use an old ID
+        unless params[:content].nil? && params[:category_id].nil?
+          raise "ID has already been used"
+        end
+      end
+
       @id = params[:id]
       @content = params[:content]
-      @corrected = params[:content]
       @category_id = params[:category_id]
     end
 
@@ -25,10 +29,6 @@ module HarmonizerRedis
         raise "id, content, and category_id are not all set"
       end
 
-      # Assert: ID has not already been used
-      if Redis.current.sismember("#{self.class}:set", "#{@id}")
-        raise "ID has already been used"
-      end
       @content_normalized = HarmonizerRedis.normalize_string(@content)
       existing_phrase_id = HarmonizerRedis::Phrase.find_by_content(@content_normalized)
       if existing_phrase_id
@@ -38,7 +38,7 @@ module HarmonizerRedis
         new_phrase.save
         @phrase = new_phrase.id
       end
-      Category.add_linkage(@category_id, @id)
+      Category.add_linkage(@category_id, @id, @phrase, @content)
       super()
     end
 
@@ -57,7 +57,12 @@ module HarmonizerRedis
     end
 
     def corrected
-      @corrected ||= Redis.current.get("#{self.class}:#{@id}:corrected")
+      label = Category.get_group_label(category_id, phrase_id)
+      if label.nil?
+        '(LABEL NOT SET)'
+      else
+        label
+      end
     end
 
     def phrase_id
@@ -97,6 +102,14 @@ module HarmonizerRedis
       end
     end
 
+    def merge_with_phrase(phrase_id)
+      Category.merge_phrase_groups(category_id, @id, phrase_id)
+    end
+
+    def set_corrected_label(label)
+      Category.set_group_label(category_id, phrase_id, label)
+    end
+
     # Helpers
     def is_category_changed?
       unless is_saved?
@@ -106,18 +119,19 @@ module HarmonizerRedis
     end
 
     def is_saved?
-      Redis.current.sismember("#{self.class}:set", @id)
+      self.class.is_linkage_saved?(@id)
     end
-
-    private :phrase_id, :is_saved?
 
     class << self
       def find(linkage_id)
-        unless Redis.current.sismember("#{self}:set", "#{linkage_id}")
+        unless is_linkage_saved?(linkage_id)
           return nil
         end
-        linkage = self.new(id: linkage_id)
-        linkage
+        self.new(id: linkage_id)
+      end
+
+      def is_linkage_saved?(linkage_id)
+        Redis.current.sismember("#{self}:set", "#{linkage_id}")
       end
 
       def get_true_label(linkage_id)
