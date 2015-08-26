@@ -85,19 +85,25 @@ module HarmonizerRedis
     # Functionality
 
     def get_similarities(num_phrases)
-      self_phrase_id = self.phrase_id
-
+      self_phrase_id = phrase_id
+      # Check if Category has been calculated
       phrase_id_list = Redis.current.zrevrange("HarmonizerRedis::Category:#{self.category_id}:#{self_phrase_id}:sims",
                                                0, num_phrases, :with_scores => true)
       phrase_id_list.map do |phrase_id, score|
         unless Phrase.in_same_group?(self_phrase_id, phrase_id)
           [Phrase.get_content(phrase_id), PhraseGroup.get_label(Phrase.get_phrase_group(phrase_id)),
-           score, phrase_id]
+           score, phrase_id.to_i]
         end
       end
     end
 
     # Helpers
+    def is_category_changed?
+      unless is_saved?
+        raise "Linkage must be saved first"
+      end
+      Category.is_changed?(self.category_id)
+    end
 
     def is_saved?
       Redis.current.sismember("#{self.class}:set", @id)

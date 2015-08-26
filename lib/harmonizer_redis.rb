@@ -46,6 +46,8 @@ module HarmonizerRedis
         end
       end
     end
+
+    Category.reset_changed(category_id)
   end
 
 
