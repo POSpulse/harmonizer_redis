@@ -26,19 +26,19 @@ module HarmonizerRedis
     phrase_id_list = phrase_set.to_a
 
     phrase_id_list.each do |id|
-      content = self.get_content(id)
-      Redis.current.set("#{self}:#{id}:matrix",
+      content = Phrase.get_content(id)
+      Redis.current.set("HarmonizerRedis::Phrase:#{id}:matrix",
                         IdfScorer.serialize_matrix(IdfScorer.calc_soft_matrix(content)))
     end
 
-    matrix_list = phrase_id_list.map { |x| self.get_matrix(x) }
+    matrix_list = phrase_id_list.map { |x| Phrase.get_matrix(x) }
 
     Redis.current.pipelined do
       (0...phrase_id_list.length).each do |i|
         (i + 1...phrase_id_list.length).each do |j|
           id_x = phrase_id_list[i]
           id_y = phrase_id_list[j]
-          score = self.calc_soft_pair_similarity(matrix_list[i], matrix_list[j])
+          score = Phrase.calc_soft_pair_similarity(matrix_list[i], matrix_list[j])
           unless score < 0.2
             Redis.current.zadd("HarmonizerRedis::Category:#{category_id}:#{id_x}:sims", score, id_y)
             Redis.current.zadd("HarmonizerRedis::Category:#{category_id}:#{id_y}:sims", score, id_x)

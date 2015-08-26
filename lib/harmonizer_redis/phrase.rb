@@ -11,7 +11,6 @@ module HarmonizerRedis
       new_phrase_group = HarmonizerRedis::PhraseGroup.new(@id)
       new_phrase_group.save
       Redis.current.set("#{self.class}:[#{@content}]", "#{@id}")
-      Redis.current.sadd("#{self.class}:new_set", "#{@id}")
 
     end
 
@@ -64,49 +63,6 @@ module HarmonizerRedis
         WhiteSimilarity.soft_cos_similarity(phrase_a_matrix, phrase_b_matrix)
       end
 
-      def batch_calc_similarities
-        new_id_list = Redis.current.smembers("#{self}:new_set")
-        old_id_list = Redis.current.smembers("#{self}:old_set")
-
-        new_id_list.each do |id|
-          content = self.get_content(id)
-          Redis.current.set("#{self}:#{id}:matrix",
-                IdfScorer.serialize_matrix(IdfScorer.calc_soft_matrix(content)))
-        end
-
-        new_matrix_list = new_id_list.map { |x| self.get_matrix(x) }
-        old_matrix_list = old_id_list.map { |x| self.get_matrix(x) }
-
-        Redis.current.pipelined do
-          (0...new_id_list.length).each do |i|
-            (0...old_id_list.length).each do |j|
-              id_x = new_id_list[i]
-              id_y = old_id_list[j]
-              score = self.calc_soft_pair_similarity(new_matrix_list[i], old_matrix_list[j])
-              unless score < 0.2
-                Redis.current.zadd("HarmonizerRedis::Phrase:#{id_x}:similarities", score, id_y)
-                Redis.current.zadd("HarmonizerRedis::Phrase:#{id_y}:similarities", score, id_x)
-              end
-            end
-          end
-
-          (0...new_id_list.length).each do |i|
-            (i + 1...new_id_list.length).each do |j|
-              id_x = new_id_list[i]
-              id_y = new_id_list[j]
-              score = self.calc_soft_pair_similarity(new_matrix_list[i], new_matrix_list[j])
-              unless score < 0.2
-                Redis.current.zadd("HarmonizerRedis::Phrase:#{id_x}:similarities", score, id_y)
-                Redis.current.zadd("HarmonizerRedis::Phrase:#{id_y}:similarities", score, id_x)
-              end
-            end
-          end
-        end
-
-        Redis.current.sunionstore("#{self}:old_set", "#{self}:old_set", "#{self}:new_set")
-        Redis.current.del("#{self}:new_set")
-
-      end
     end
   end
 end

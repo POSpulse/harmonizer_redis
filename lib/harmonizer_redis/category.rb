@@ -1,5 +1,5 @@
 module HarmonizerRedis
-  class Category < BasicObject
+  class Category < BaseObject
     def initialize(category_id)
       @id = category_id
     end
@@ -11,6 +11,10 @@ module HarmonizerRedis
     class << self
       # Add linkage to category group
       def add_linkage(category_id, linkage_id)
+        unless self.is_valid?(category_id)
+          new_category = self.new(category_id)
+          new_category.save
+        end
         Redis.current.sadd("#{self}:#{category_id}:linkage_set", linkage_id)
       end
 

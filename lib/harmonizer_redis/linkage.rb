@@ -3,9 +3,7 @@ module HarmonizerRedis
     attr_reader :id
 
     def initialize(params)
-      if Redis.current.sismember("#{self.class}:set", "#{params[:id]}")
-        raise "ID has already been used"
-      end
+
 
       unless params[:id]
         raise "id must be given in params"
@@ -21,8 +19,15 @@ module HarmonizerRedis
       # if phrase already exists : set to that phrase
       # otherwise : create a new phrase and set linkage:phrase to that phrase
       # linkage is also added to the category with certain id (can be used to divide tasks)
+
+      # Assert: all required fields have been set
       unless @id && @content && @category_id
         raise "id, content, and category_id are not all set"
+      end
+
+      # Assert: ID has not already been used
+      if Redis.current.sismember("#{self.class}:set", "#{@id}")
+        raise "ID has already been used"
       end
       @content_normalized = HarmonizerRedis.normalize_string(@content)
       existing_phrase_id = HarmonizerRedis::Phrase.find_by_content(@content_normalized)
@@ -62,15 +67,26 @@ module HarmonizerRedis
     # Writers
 
     def content=(value)
-      unless Redis.current.sismember("#{self.class}:set", @id)
-        @content = value
-      else
+      if self.is_saved?
         raise "Saved linkage content cannot be edited"
+      else
+        @content = value
       end
     end
 
+    def category_id=(value)
+      if self.is_saved?
+        raise "Saved linkage category_id cannot be edited"
+      else
+        @category_id = value
+      end
+    end
+
+    # Functionality
+
     def get_similarities(num_phrases)
       self_phrase_id = self.phrase_id
+
       phrase_id_list = Redis.current.zrevrange("HarmonizerRedis::Category:#{self.category_id}:#{self_phrase_id}:sims",
                                                0, num_phrases, :with_scores => true)
       phrase_id_list.map do |phrase_id, score|
@@ -81,7 +97,13 @@ module HarmonizerRedis
       end
     end
 
-    private :phrase_id
+    # Helpers
+
+    def is_saved?
+      Redis.current.sismember("#{self.class}:set", @id)
+    end
+
+    private :phrase_id, :is_saved?
 
     class << self
       def find(linkage_id)
