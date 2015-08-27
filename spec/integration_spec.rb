@@ -73,7 +73,14 @@ describe 'Integration Tests' do
   end
 
   it "The label that is already set should persist" do
-
+    HarmonizerRedis.calculate_similarities(1)
+    linkage_a = HarmonizerRedis::Linkage.find(0)
+    linkage_b = HarmonizerRedis::Linkage.find(1)
+    linkage_a.merge_with_phrase(linkage_b.phrase_id)
+    simplified_a = linkage_a.get_similarities(20).map { |x| x[-1] }
+    simplified_b = linkage_b.get_similarities(20).map { |x| x[-1] }
+    expect(simplified_a.to_set.include?(linkage_b.phrase_id)).to be_falsey
+    expect(simplified_b.to_set.include?(linkage_a.phrase_id)).to be_falsey
   end
 
   it "should get probable labels for a linkage" do

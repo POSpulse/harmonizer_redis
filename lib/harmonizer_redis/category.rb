@@ -47,6 +47,7 @@ module HarmonizerRedis
         !Redis.current.getbit("#{self}:changed", category_id).zero?
       end
 
+      # Merge 2 phrases' groups
       def merge_phrase_groups(category_id, phrase_a_id, phrase_b_id)
         group_a = get_group_key(category_id, phrase_a_id)
         group_b = get_group_key(category_id, phrase_b_id)
@@ -90,6 +91,10 @@ module HarmonizerRedis
 
       def get_group_label(category_id, phrase_id)
         Redis.current.get("#{get_group_key(category_id, phrase_id)}:label")
+      end
+
+      def in_same_group?(category_id, phrase_a_id, phrase_b_id)
+        get_group_key(category_id, phrase_a_id) == get_group_key(category_id, phrase_b_id)
       end
 
       ### Helpers ####

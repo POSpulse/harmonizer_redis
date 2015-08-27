@@ -94,12 +94,14 @@ module HarmonizerRedis
       # Check if Category has been calculated
       phrase_id_list = Redis.current.zrevrange("HarmonizerRedis::Category:#{self.category_id}:#{self_phrase_id}:sims",
                                                0, num_phrases, :with_scores => true)
-      phrase_id_list.map do |phrase_id, score|
-        unless Phrase.in_same_group?(self_phrase_id, phrase_id)
-          [Phrase.get_content(phrase_id), PhraseGroup.get_label(Phrase.get_phrase_group(phrase_id)),
+      results = []
+      phrase_id_list.each do |phrase_id, score|
+        unless Category.in_same_group?(category_id, self_phrase_id, phrase_id)
+          results << [Phrase.get_content(phrase_id), PhraseGroup.get_label(Phrase.get_phrase_group(phrase_id)),
            score, phrase_id.to_i]
         end
       end
+      results
     end
 
     def merge_with_phrase(phrase_id)
@@ -132,9 +134,6 @@ module HarmonizerRedis
 
       def is_linkage_saved?(linkage_id)
         Redis.current.sismember("#{self}:set", "#{linkage_id}")
-      end
-
-      def is_same_group?(linkage_id, phrase_id)
       end
 
       def get_true_label(linkage_id)
