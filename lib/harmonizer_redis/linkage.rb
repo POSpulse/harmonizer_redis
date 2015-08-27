@@ -38,8 +38,8 @@ module HarmonizerRedis
         new_phrase.save
         @phrase = new_phrase.id
       end
-      Category.add_linkage(@category_id, @id, @phrase, @content)
       super()
+      Category.add_linkage(self)
     end
 
     # Readers
@@ -59,7 +59,11 @@ module HarmonizerRedis
     def corrected
       label = Category.get_group_label(category_id, phrase_id)
       if label.nil?
-        '(LABEL NOT SET)'
+        if Category.get_group_count(category_id, phrase_id)
+          return content
+        else
+          '(LABEL NOT SET)'
+        end
       else
         label
       end
@@ -97,11 +101,17 @@ module HarmonizerRedis
       results = []
       phrase_id_list.each do |phrase_id, score|
         unless Category.in_same_group?(category_id, self_phrase_id, phrase_id)
-          results << [Phrase.get_content(phrase_id), PhraseGroup.get_label(Phrase.get_phrase_group(phrase_id)),
-           score, phrase_id.to_i]
+          results << [Phrase.get_content(phrase_id), corrected, score, phrase_id.to_i]
         end
       end
       results
+    end
+
+    # Recommend possible labels for a linkage
+    def recommend_labels
+      existing_labels = Category.get_all_group_labels(category_id, phrase_id)
+      other_linkages = Category.get_group_popular_linkages(category_id, phrase_id)
+      existing_labels + other_linkages
     end
 
     def merge_with_phrase(phrase_id)

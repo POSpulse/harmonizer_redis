@@ -72,7 +72,7 @@ describe 'Integration Tests' do
     expect(Redis.current.smembers(my_linkage_group)).to eq(Redis.current.smembers(other_linkage_group))
   end
 
-  it "The label that is already set should persist" do
+  it "similarities do not show phrases in the same group" do
     HarmonizerRedis.calculate_similarities(1)
     linkage_a = HarmonizerRedis::Linkage.find(0)
     linkage_b = HarmonizerRedis::Linkage.find(1)
@@ -83,9 +83,27 @@ describe 'Integration Tests' do
     expect(simplified_b.to_set.include?(linkage_a.phrase_id)).to be_falsey
   end
 
+  it "should let the label that is already set persist" do
+    linkage_a = HarmonizerRedis::Linkage.find(0)
+    linkage_b = HarmonizerRedis::Linkage.find(1)
+    linkage_c = HarmonizerRedis::Linkage.find(2)
+    linkage_b.set_corrected_label('ABCD')
+    linkage_a.merge_with_phrase(linkage_b.phrase_id)
+    expect(linkage_a.corrected).to eq('ABCD')
+    linkage_c.merge_with_phrase(linkage_a.phrase_id)
+    expect(linkage_c.corrected).to eq('ABCD')
+    expect(linkage_b.corrected).to eq('ABCD')
+
+  end
+
+
   it "should get probable labels for a linkage" do
     HarmonizerRedis.calculate_similarities(1)
-    linkage = HarmonizerRedis::Linkage.find(1)
+    linkage_a = HarmonizerRedis::Linkage.find(0)
+    linkage_b = HarmonizerRedis::Linkage.find(1)
+    linkage_a.merge_with_phrase(linkage_b.phrase_id)
+    suggested = linkage_a.recommend_labels
+    puts suggested.inspect
   end
 
 end
