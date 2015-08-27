@@ -72,6 +72,10 @@ describe 'Integration Tests' do
     expect(Redis.current.smembers(my_linkage_group)).to eq(Redis.current.smembers(other_linkage_group))
   end
 
+  it "The label that is already set should persist" do
+
+  end
+
   it "should get probable labels for a linkage" do
   end
 

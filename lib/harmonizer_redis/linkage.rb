@@ -45,15 +45,15 @@ module HarmonizerRedis
     # Readers
 
     def content
-      @content ||= Redis.current.get("#{self.class}:#{@id}:content")
+      @content ||= self.class.get_content(@id)
     end
 
     def content_normalized
-      @content_normalized ||= Redis.current.get("#{self.class}:#{@id}:content")
+      @content_normalized ||= self.class.get_content_normalized(@id)
     end
 
     def category_id
-      @category_id ||= Redis.current.get("#{self.class}:#{@id}:category_id")
+      @category_id ||= self.class.get_category_id(@id)
     end
 
     def corrected
@@ -66,7 +66,7 @@ module HarmonizerRedis
     end
 
     def phrase_id
-      @phrase ||= Redis.current.get("#{self.class}:#{@id}:phrase")
+      @phrase ||= self.class.get_phrase_id(@id)
     end
 
     # Writers
@@ -134,6 +134,9 @@ module HarmonizerRedis
         Redis.current.sismember("#{self}:set", "#{linkage_id}")
       end
 
+      def is_same_group?(linkage_id, phrase_id)
+      end
+
       def get_true_label(linkage_id)
         PhraseGroup.get_label(self.get_phrase_group_id(linkage_id))
       end
@@ -150,14 +153,27 @@ module HarmonizerRedis
         Phrase.get_phrase_group(get_phrase_id(linkage_id)).to_i
       end
 
+      def get_category_id(linkage_id)
+        Redis.current.get("#{self}:#{linkage_id}:category_id").to_i
+      end
+
       def get_phrase_id(linkage_id)
         Redis.current.get("#{self}:#{linkage_id}:phrase").to_i
+      end
+
+      def get_content(linkage_id)
+        Redis.current.get("#{self}:#{linkage_id}:content")
+      end
+
+      def get_content_normalized(linkage_id)
+        Redis.current.get("#{self}:#{linkage_id}:content_normalized")
       end
 
       def merge_with_phrase(linkage_id, foreign_phrase_id)
         own_phrase_id = self.get_phrase_id(linkage_id)
         Phrase.merge_phrases(own_phrase_id, foreign_phrase_id)
       end
+
     end
   end
 end
