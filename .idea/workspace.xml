@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="88a31a3e-4827-4cda-8565-dd54ce840621" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/harmonizer_redis/category.rb" afterPath="$PROJECT_DIR$/lib/harmonizer_redis/category.rb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/spec/integration_spec.rb" afterPath="$PROJECT_DIR$/spec/integration_spec.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/harmonizer_redis/linkage.rb" afterPath="$PROJECT_DIR$/lib/harmonizer_redis/linkage.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/harmonizer_redis/phrase.rb" afterPath="$PROJECT_DIR$/lib/harmonizer_redis/phrase.rb" />
     </list>
     <ignored path="harmonizer_redis.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -27,21 +24,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="category.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="category.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/harmonizer_redis/category.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.3410042">
-              <caret line="110" column="18" selection-start-line="110" selection-start-column="18" selection-end-line="110" selection-end-column="18" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="102" column="20" selection-start-line="102" selection-start-column="20" selection-end-line="102" selection-end-column="20" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="integration_spec.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="integration_spec.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/spec/integration_spec.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="106" column="4" selection-start-line="106" selection-start-column="4" selection-end-line="106" selection-end-column="4" />
+            <state vertical-scroll-proportion="0.62343097">
+              <caret line="104" column="40" selection-start-line="104" selection-start-column="40" selection-end-line="104" selection-end-column="40" />
               <folding />
             </state>
           </provider>
@@ -51,7 +48,7 @@
         <entry file="file://$PROJECT_DIR$/lib/harmonizer_redis/linkage.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="113" column="0" selection-start-line="113" selection-start-column="0" selection-end-line="113" selection-end-column="0" />
+              <caret line="114" column="6" selection-start-line="114" selection-start-column="6" selection-end-line="114" selection-end-column="6" />
               <folding />
             </state>
           </provider>
@@ -61,7 +58,7 @@
         <entry file="file://$PROJECT_DIR$/lib/harmonizer_redis.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="32" column="64" selection-start-line="32" selection-start-column="64" selection-end-line="32" selection-end-column="64" />
+              <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -71,7 +68,7 @@
         <entry file="file://$PROJECT_DIR$/lib/harmonizer_redis/phrase.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="34" column="36" selection-start-line="34" selection-start-column="36" selection-end-line="34" selection-end-column="36" />
+              <caret line="27" column="0" selection-start-line="27" selection-start-column="0" selection-end-line="27" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -103,10 +100,10 @@
         <option value="$PROJECT_DIR$/spec/linkage_spec.rb" />
         <option value="$PROJECT_DIR$/lib/harmonizer_redis/phrase_group.rb" />
         <option value="$PROJECT_DIR$/lib/harmonizer_redis.rb" />
-        <option value="$PROJECT_DIR$/spec/integration_spec.rb" />
+        <option value="$PROJECT_DIR$/lib/harmonizer_redis/category.rb" />
         <option value="$PROJECT_DIR$/lib/harmonizer_redis/phrase.rb" />
         <option value="$PROJECT_DIR$/lib/harmonizer_redis/linkage.rb" />
-        <option value="$PROJECT_DIR$/lib/harmonizer_redis/category.rb" />
+        <option value="$PROJECT_DIR$/spec/integration_spec.rb" />
       </list>
     </option>
   </component>
@@ -427,9 +424,9 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1280" height="800" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.33068782" sideWeight="0.49676898" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.33068782" sideWeight="0.49676898" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24973376" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -796,23 +793,7 @@
     <entry file="file://$PROJECT_DIR$/lib/harmonizer_redis/phrase.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="34" column="36" selection-start-line="34" selection-start-column="36" selection-end-line="34" selection-end-column="36" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/harmonizer_redis.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="32" column="64" selection-start-line="32" selection-start-column="64" selection-end-line="32" selection-end-column="64" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/spec/integration_spec.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="106" column="4" selection-start-line="106" selection-start-column="4" selection-end-line="106" selection-end-column="4" />
+          <caret line="27" column="0" selection-start-line="27" selection-start-column="0" selection-end-line="27" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -820,15 +801,31 @@
     <entry file="file://$PROJECT_DIR$/lib/harmonizer_redis/linkage.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="113" column="0" selection-start-line="113" selection-start-column="0" selection-end-line="113" selection-end-column="0" />
+          <caret line="114" column="6" selection-start-line="114" selection-start-column="6" selection-end-line="114" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/harmonizer_redis.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/harmonizer_redis/category.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3410042">
-          <caret line="110" column="18" selection-start-line="110" selection-start-column="18" selection-end-line="110" selection-end-column="18" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="102" column="20" selection-start-line="102" selection-start-column="20" selection-end-line="102" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/spec/integration_spec.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.62343097">
+          <caret line="104" column="40" selection-start-line="104" selection-start-column="40" selection-end-line="104" selection-end-column="40" />
           <folding />
         </state>
       </provider>

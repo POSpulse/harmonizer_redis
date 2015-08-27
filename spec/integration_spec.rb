@@ -99,11 +99,14 @@ describe 'Integration Tests' do
 
   it "should get probable labels for a linkage" do
     HarmonizerRedis.calculate_similarities(1)
+    HarmonizerRedis.calculate_similarities(2)
     linkage_a = HarmonizerRedis::Linkage.find(0)
     linkage_b = HarmonizerRedis::Linkage.find(1)
+    linkage_c = HarmonizerRedis::Linkage.find(4)
     linkage_a.merge_with_phrase(linkage_b.phrase_id)
+    linkage_c.set_corrected_label('ABCD')
     suggested = linkage_a.recommend_labels
-    puts suggested.inspect
+    expect(suggested[0][0]).to eq('ABCD')
   end
 
 end
