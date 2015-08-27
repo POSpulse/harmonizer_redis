@@ -14,12 +14,14 @@ module HarmonizerRedis
         category_id = linkage.category_id
         linkage_id = linkage.id
         phrase_id = linkage.phrase_id
-        unless self.is_valid?(category_id)
+        unless self.valid?(category_id)
           new_category = self.new(category_id)
           new_category.save
         end
         Redis.current.sadd("#{self}:#{category_id}:linkage_set", linkage_id)
+        Redis.current.sadd("#{self}:#{category_id}:phrase_set", phrase_id)
         set_changed(category_id, 1)
+        set_calculated(category_id, 0)
 
         # Creating/adding to a group
         group_key = get_group_key(category_id, phrase_id)
@@ -38,6 +40,28 @@ module HarmonizerRedis
         Redis.current.smembers("#{self}:#{category_id}:linkage_set").map { |x| x.to_i }
       end
 
+      def get_phrase_list(category_id)
+        Redis.current.smembers("#{self}:#{category_id}:phrase_set").map { |x| x.to_i }
+      end
+
+      def get_matrices(category_id, phrase_id_list)
+        matrices_list = []
+        if !matrices_calculated?(category_id)
+          phrase_id_list.each do |id|
+            content = Phrase.get_content(id)
+            new_matrix = IdfScorer.serialize_matrix(IdfScorer.calc_soft_matrix(content))
+            Redis.current.set("HarmonizerRedis::Phrase:#{id}:matrix", new_matrix)
+            matrices_list << new_matrix
+          end
+          set_calculated(category_id, 1)
+        else
+          phrase_id_list.each do |phrase_id|
+            matrices_list << Phrase.get_matrix(phrase_id)
+          end
+        end
+        matrices_list
+      end
+
       # Set the category as "unchanged". Should be called after Category similarities
       # have been calculated
       def reset_changed(category_id)
@@ -45,12 +69,16 @@ module HarmonizerRedis
       end
 
       # Check to see if id is valid
-      def is_valid?(category_id)
+      def valid?(category_id)
         Redis.current.sismember("#{self}:set", "#{category_id}")
       end
 
-      def is_changed?(category_id)
+      def changed?(category_id)
         !Redis.current.getbit("#{self}:changed", category_id).zero?
+      end
+
+      def matrices_calculated?(category_id)
+        !Redis.current.getbit("#{self}:calculated", category_id).zero?
       end
 
       # Merge 2 phrases' groups
@@ -144,6 +172,10 @@ module HarmonizerRedis
       ### Helpers ####
       def set_changed(category_id, value)
         Redis.current.setbit("#{self}:changed", category_id, value)
+      end
+
+      def set_calculated(category_id, value)
+        Redis.current.setbit("#{self}:calculated", category_id, value)
       end
 
       def create_group(category_id, phrase_id)

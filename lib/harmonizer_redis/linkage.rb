@@ -91,7 +91,23 @@ module HarmonizerRedis
       end
     end
 
-    # Functionality
+    ### Functionality
+    def calculate_similarities
+      # TODO: Test this!
+      own_phrase_id = phrase_id
+      own_cat_id = category_id
+      phrase_list = Category.get_phrase_list(own_cat_id)
+      matrix_list = Category.get_matrices(category_id, phrase_list)
+      own_matrix = Phrase.get_matrix(own_phrase_id)
+      Redis.current.pipelined do
+        phrase_list.each_with_index do |other_id, index|
+          score = Phrase.calc_soft_pair_similarity(own_matrix, matrix_list[index])
+          if score > 0.2
+            Redis.current.zadd("HarmonizerRedis::Category:#{own_cat_id}:#{own_phrase_id}:sims", score, other_id)
+          end
+        end
+      end
+    end
 
     def get_similarities(num_phrases)
       self_phrase_id = phrase_id
@@ -122,12 +138,12 @@ module HarmonizerRedis
       Category.set_group_label(category_id, phrase_id, label)
     end
 
-    # Helpers
+    ### Helpers
     def is_category_changed?
       unless is_saved?
         raise "Linkage must be saved first"
       end
-      Category.is_changed?(self.category_id)
+      Category.changed?(self.category_id)
     end
 
     def is_saved?

@@ -14,23 +14,13 @@ include WhiteSimilarity
 module HarmonizerRedis
   ### Calculate Similarities. Store them with the category
   def HarmonizerRedis.calculate_similarities(category_id)
-    if !Category.is_valid?(category_id)
+    if !Category.valid?(category_id)
       raise "Category ID: #{category_id} is invalid"
     end
-    linkages = Category.get_linkage_list(category_id)
-    phrase_set = Set.new
-    linkages.each do |linkage_id|
-      phrase_set.add(Linkage.get_phrase_id(linkage_id))
-    end
-    phrase_id_list = phrase_set.to_a
 
-    phrase_id_list.each do |id|
-      content = Phrase.get_content(id)
-      Redis.current.set("HarmonizerRedis::Phrase:#{id}:matrix",
-                        IdfScorer.serialize_matrix(IdfScorer.calc_soft_matrix(content)))
-    end
+    phrase_id_list = Category.get_phrase_list(category_id)
 
-    matrix_list = phrase_id_list.map { |x| Phrase.get_matrix(x) }
+    matrix_list = Category.get_matrices(category_id, phrase_id_list)
 
     Redis.current.pipelined do
       (0...phrase_id_list.length).each do |i|

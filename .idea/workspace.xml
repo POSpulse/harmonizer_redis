@@ -37,8 +37,8 @@
       <file leaf-file-name="integration_spec.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/spec/integration_spec.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.62343097">
-              <caret line="104" column="40" selection-start-line="104" selection-start-column="40" selection-end-line="104" selection-end-column="40" />
+            <state vertical-scroll-proportion="0.748954">
+              <caret line="108" column="40" selection-start-line="108" selection-start-column="40" selection-end-line="108" selection-end-column="40" />
               <folding />
             </state>
           </provider>
@@ -824,8 +824,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/spec/integration_spec.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.62343097">
-          <caret line="104" column="40" selection-start-line="104" selection-start-column="40" selection-end-line="104" selection-end-column="40" />
+        <state vertical-scroll-proportion="0.748954">
+          <caret line="108" column="40" selection-start-line="108" selection-start-column="40" selection-end-line="108" selection-end-column="40" />
           <folding />
         </state>
       </provider>
