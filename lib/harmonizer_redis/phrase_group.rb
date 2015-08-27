@@ -12,7 +12,6 @@ module HarmonizerRedis
       super()
       Redis.current.sadd("#{self.class}:#{@id}:phrase_set", @init_phrase_id)
       HarmonizerRedis::Phrase.set_phrase_group(@init_phrase_id, @id)
-      HarmonizerRedis::IdfScorer.add_document(@init_phrase_id)
       Redis.current.pipelined do
         @label.split.each do |word|
           Redis.current.sadd("#{self.class}:#{@id}:word_set", word)

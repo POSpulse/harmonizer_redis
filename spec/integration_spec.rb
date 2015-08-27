@@ -84,6 +84,8 @@ describe 'Integration Tests' do
   end
 
   it "should get probable labels for a linkage" do
+    HarmonizerRedis.calculate_similarities(1)
+    linkage = HarmonizerRedis::Linkage.find(1)
   end
 
 end
