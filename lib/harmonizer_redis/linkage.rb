@@ -115,9 +115,9 @@ module HarmonizerRedis
       phrase_id_list = Redis.current.zrevrange("HarmonizerRedis::Category:#{self.category_id}:#{self_phrase_id}:sims",
                                                0, num_phrases, :with_scores => true)
       results = []
-      phrase_id_list.each do |phrase_id, score|
-        unless Category.in_same_group?(category_id, self_phrase_id, phrase_id)
-          results << [Phrase.get_content(phrase_id), corrected, score, phrase_id.to_i]
+      phrase_id_list.each do |phrase, score|
+        unless Category.in_same_group?(category_id, self_phrase_id, phrase)
+          results << [Phrase.get_content(phrase), Category.get_group_label(category_id, phrase), score, phrase.to_i]
         end
       end
       results
@@ -131,7 +131,7 @@ module HarmonizerRedis
     end
 
     def merge_with_phrase(phrase_id)
-      Category.merge_phrase_groups(category_id, @id, phrase_id)
+      Category.merge_phrase_groups(category_id, self.phrase_id, phrase_id)
     end
 
     def set_corrected_label(label)

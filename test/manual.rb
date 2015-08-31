@@ -18,30 +18,54 @@ file.each_line do |line|
 end
 
 to_add.each_with_index do |text, index|
-  new_linkage = HarmonizerRedis::Linkage.new(id: index, content: text)
+  new_linkage = HarmonizerRedis::Linkage.new(id: index, content: text, category_id: 1)
   new_linkage.save
 end
 
 time = Benchmark.realtime do
-  HarmonizerRedis::Phrase.batch_calc_similarities
+  HarmonizerRedis.calculate_similarities(1)
 end
 
+
+### Functions
+def print_list(list)
+  list.each do |entry|
+    entry.each do |item|
+      print "#{item}\t"
+    end
+    print "\n"
+  end
+end
 puts "Time: #{time}"
 
+puts 'Done. Now enter tests.'
 
-def get_similar_ones(phrase)
-  phrase_id = HarmonizerRedis::Phrase.find_by_content(phrase)
-  return false if phrase_id.nil?
-  id_list = Redis.current.zrevrange("HarmonizerRedis::Phrase:#{phrase_id}:similarities", 0, 20, :with_scores => true)
-  id_list.each do |phrase_id, score|
-    puts "#{HarmonizerRedis::Phrase.get_content(phrase_id)}\t#{score}"
+linkage_list = Redis.current.smembers("HarmonizerRedis::Linkage:set")
+input = 'ha'
+current_index = 0
+while input[0] != 'quit'
+  curr = HarmonizerRedis::Linkage.find(linkage_list[current_index])
+  puts "#{curr.content}"
+  input = gets.chomp.downcase.split(',')
+  if input[0] == 'similar'
+    print_list(curr.get_similarities(10))
+  elsif input[0] == 'merge'
+    phrase_id = input[1].to_i
+    curr.merge_with_phrase(phrase_id)
+    puts 'Merged!'
+  elsif input[0] == 'recommend'
+    print_list(curr.recommend_labels)
+  elsif input[0] == 'set'
+    unless input.length >= 2
+      raise 'Input too short'
+    end
+    curr.set_corrected_label(input[1])
+  else
+    current_index += 1
   end
 end
 
-puts 'Done. Now enter tests. q to quit'
-input = gets.chomp
-while input != 'q' do
-  get_similar_ones(input)
-  puts 'ask again'
-  input = gets.chomp
+linkage_list.each do |linkage_id|
+  linkage = HarmonizerRedis.Linkage.find(linkage_id)
+  puts "#{linkage.content}\t#{linkage.corrected}"
 end
