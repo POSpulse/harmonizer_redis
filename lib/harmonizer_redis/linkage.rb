@@ -162,22 +162,6 @@ module HarmonizerRedis
         Redis.current.sismember("#{self}:set", "#{linkage_id}")
       end
 
-      def get_true_label(linkage_id)
-        PhraseGroup.get_label(self.get_phrase_group_id(linkage_id))
-      end
-
-      # option :show_changes => true will return list of changed phrases
-      def set_true_label(linkage_id, new_label = nil, options = {})
-        PhraseGroup.set_label(self.get_phrase_group_id(linkage_id), new_label)
-        if options[:show_changes]
-          PhraseGroup.get_phrase_list(self.get_phrase_group_id(linkage_id)).map { |x| Phrase.get_content(x) }
-        end
-      end
-
-      def get_phrase_group_id(linkage_id)
-        Phrase.get_phrase_group(get_phrase_id(linkage_id)).to_i
-      end
-
       def get_category_id(linkage_id)
         Redis.current.get("#{self}:#{linkage_id}:category_id").to_i
       end
@@ -192,11 +176,6 @@ module HarmonizerRedis
 
       def get_content_normalized(linkage_id)
         Redis.current.get("#{self}:#{linkage_id}:content_normalized")
-      end
-
-      def merge_with_phrase(linkage_id, foreign_phrase_id)
-        own_phrase_id = self.get_phrase_id(linkage_id)
-        Phrase.merge_phrases(own_phrase_id, foreign_phrase_id)
       end
 
     end
