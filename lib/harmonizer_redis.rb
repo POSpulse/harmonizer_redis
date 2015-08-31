@@ -14,7 +14,7 @@ include WhiteSimilarity
 module HarmonizerRedis
   ### Calculate Similarities. Store them with the category
   def HarmonizerRedis.calculate_similarities(category_id)
-    if !Category.valid?(category_id)
+    unless Category.valid?(category_id)
       raise "Category ID: #{category_id} is invalid"
     end
 
