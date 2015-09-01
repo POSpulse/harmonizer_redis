@@ -27,6 +27,7 @@ module HarmonizerRedis
       # Assert: all required fields have been set
       unless @id && @content && @category_id
         raise "id, content, and category_id are not all set"
+        return
       end
 
       @content_normalized = HarmonizerRedis.normalize_string(@content)
@@ -109,7 +110,7 @@ module HarmonizerRedis
       end
     end
 
-    def get_similarities(num_phrases)
+    def get_similarities(num_phrases = 20)
       self_phrase_id = phrase_id
       # Check if Category has been calculated
       phrase_id_list = Redis.current.zrevrange("HarmonizerRedis::Category:#{self.category_id}:#{self_phrase_id}:sims",

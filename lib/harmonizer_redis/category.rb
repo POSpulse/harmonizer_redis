@@ -1,5 +1,6 @@
 module HarmonizerRedis
   class Category < BaseObject
+    attr_reader :id
     def initialize(id)
       @id = id
     end
