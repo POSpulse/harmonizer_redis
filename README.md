@@ -68,7 +68,7 @@ my_linkage.merge_with_phrase(phrase_id)
 To label everything in the same group:
 
 ```ruby
-my_linkage.set_corrected_label('HarmonizerRedis`)
+my_linkage.set_corrected_label('HarmonizerRedis')
 ```
 
 To suggest labels for this group (this works better the more HarmonizerRedis is used)
