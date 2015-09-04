@@ -18,15 +18,14 @@ Redis.current = Redis.new
 ### Adding an entry
 
 `HarmonizerRedis::Linkage` represents the connection between your data structures and the gem. Linkages contain
-string content, an `id` (which needs to be set - this can simply match the existing id for the object you
-are trying to link), and a `category_id` which identifies the collection this entry belongs to.
+string content, an `id` (which will be a uniquely generated uuid), and a `category_id` which identifies the collection this entry belongs to.
 
 ```ruby
-my_linkage_id = 5
 my_category_id = 100
-linkage = HarmonizerRedis::Linkage.new(id: my_linkage_id, content: 'harmonizer redis',
+linkage = HarmonizerRedis::Linkage.new(content: 'harmonizer redis',
                                        category_id: my_category_id)
 linkage.save
+my_linkage_id = linkage.id # "520c488b-e9f8-4a6f-aaea-0d5e37b97644"
 ```
 
 ### Retrieving an entry

@@ -40,7 +40,4 @@ describe HarmonizerRedis::Linkage do
     expect(Redis.current.get('HarmonizerRedis::Phrase:0:content')).to eq('different')
     expect(Redis.current.get('HarmonizerRedis::Phrase:1:content')).to eq('testing')
   end
-
-
-
 end
