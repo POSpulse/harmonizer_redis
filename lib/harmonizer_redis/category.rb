@@ -15,34 +15,32 @@ module HarmonizerRedis
         category_id = linkage.category_id
         linkage_id = linkage.id
         phrase_id = linkage.phrase_id
+
         unless self.valid?(category_id)
           new_category = self.new(category_id)
           new_category.save
         end
-        Redis.current.sadd("#{self}:#{category_id}:linkage_set", linkage_id)
-        Redis.current.sadd("#{self}:#{category_id}:phrase_set", phrase_id)
+
+        self.add_to_linkage_set(category_id, linkage_id)
+        self.add_to_phrase_set(category_id, phrase_id)
+
         set_changed(category_id, 1)
         set_calculated(category_id, 0)
 
         # Creating/adding to a group
-        group_key = get_group_key(category_id, phrase_id)
-        if group_key.nil?
-          group_key = create_group(category_id, phrase_id)
-          Redis.current.sadd(group_key, phrase_id)
-        end
+        add_group(category_id, phrase_id)
 
         # Adding linkage to the phrase
-        Phrase.add_linkage(phrase_id, linkage_id)
-        Phrase.add_category(phrase_id, category_id)
+        Phrase.add_linkage(phrase_id, linkage_id, category_id)
       end
 
       # Gets list of linkages included in category group
       def get_linkage_list(category_id)
-        Redis.current.smembers("#{self}:#{category_id}:linkage_set").map { |x| x.to_i }
+        Redis.current.smembers("#{self}:#{category_id}:linkage_set")
       end
 
       def get_phrase_list(category_id)
-        Redis.current.smembers("#{self}:#{category_id}:phrase_set").map { |x| x.to_i }
+        Redis.current.smembers("#{self}:#{category_id}:phrase_set")
       end
 
       def get_matrices(category_id, phrase_id_list)
@@ -171,12 +169,28 @@ module HarmonizerRedis
       end
 
       ### Helpers ####
+      def add_to_linkage_set(category_id, linkage_id)
+        Redis.current.sadd("#{self}:#{category_id}:linkage_set", linkage_id)
+      end
+
+      def add_to_phrase_set(category_id, phrase_id)
+        Redis.current.sadd("#{self}:#{category_id}:phrase_set", phrase_id)
+      end
+
       def set_changed(category_id, value)
         Redis.current.setbit("#{self}:changed", category_id, value)
       end
 
       def set_calculated(category_id, value)
         Redis.current.setbit("#{self}:calculated", category_id, value)
+      end
+
+      def add_group(category_id, phrase_id)
+        group_key = get_group_key(category_id, phrase_id)
+        if group_key.nil?
+          group_key = create_group(category_id, phrase_id)
+          Redis.current.sadd(group_key, phrase_id)
+        end
       end
 
       def create_group(category_id, phrase_id)

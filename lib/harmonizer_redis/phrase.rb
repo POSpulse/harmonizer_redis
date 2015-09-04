@@ -21,8 +21,14 @@ module HarmonizerRedis
         Redis.current.get("#{self}:#{phrase_id}:content")
       end
 
+      # Setup
+      def add_linkage(phrase_id, linkage_id, category_id)
+        add_linkage_id(phrase_id, linkage_id)
+        add_category_id(phrase_id, category_id)
+      end
+
       # Linkages
-      def add_linkage(phrase_id, linkage_id)
+      def add_linkage_id(phrase_id, linkage_id)
         Redis.current.zincrby(linkage_set_key(phrase_id), 1, Linkage.get_content(linkage_id))
       end
 
@@ -38,7 +44,7 @@ module HarmonizerRedis
       end
 
       # Categories
-      def add_category(phrase_id, category_id)
+      def add_category_id(phrase_id, category_id)
         Redis.current.sadd(category_set_key(phrase_id), category_id)
       end
 

@@ -2,19 +2,11 @@ module HarmonizerRedis
   class Linkage < BaseObject
     attr_reader :id
 
-    def initialize(params)
-      unless params[:id]
-        raise "id must be given in params"
-      end
+    def generate_id
+      SecureRandom.uuid
+    end
 
-      if self.is_saved?
-        # Make sure that user does not re use an old ID
-        unless params[:content].nil? && params[:category_id].nil?
-          raise "ID has already been used"
-        end
-      end
-
-      @id = params[:id]
+    def initialize(params={})
       @content = params[:content]
       @category_id = params[:category_id]
     end
@@ -23,8 +15,9 @@ module HarmonizerRedis
       # if phrase already exists : set to that phrase
       # otherwise : create a new phrase and set linkage:phrase to that phrase
       # linkage is also added to the category with certain id (can be used to divide tasks)
-
       # Assert: all required fields have been set
+      @id = generate_id
+
       unless @id && @content && @category_id
         raise "id, content, and category_id are not all set"
         return
@@ -118,7 +111,7 @@ module HarmonizerRedis
       results = []
       phrase_id_list.each do |phrase, score|
         unless Category.in_same_group?(category_id, self_phrase_id, phrase)
-          results << [Phrase.get_content(phrase), Category.get_group_label(category_id, phrase), score, phrase.to_i]
+          results << [Phrase.get_content(phrase), Category.get_group_label(category_id, phrase), score, phrase]
         end
       end
       results
@@ -156,7 +149,9 @@ module HarmonizerRedis
         unless is_linkage_saved?(linkage_id)
           return nil
         end
-        self.new(id: linkage_id)
+        linkage = self.new
+        linkage.instance_variable_set('@id', linkage_id)
+        linkage
       end
 
       def is_linkage_saved?(linkage_id)
@@ -164,11 +159,11 @@ module HarmonizerRedis
       end
 
       def get_category_id(linkage_id)
-        Redis.current.get("#{self}:#{linkage_id}:category_id").to_i
+        Redis.current.get("#{self}:#{linkage_id}:category_id")
       end
 
       def get_phrase_id(linkage_id)
-        Redis.current.get("#{self}:#{linkage_id}:phrase").to_i
+        Redis.current.get("#{self}:#{linkage_id}:phrase")
       end
 
       def get_content(linkage_id)

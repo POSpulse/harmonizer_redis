@@ -7,12 +7,11 @@ describe HarmonizerRedis::Linkage do
 
   before :each do
     Redis.current.flushall
-    @linkage = HarmonizerRedis::Linkage.new(id: 5, content: 'testing', category_id: 3)
+    @linkage = HarmonizerRedis::Linkage.new(content: 'testing', category_id: 3)
   end
 
   it '#new' do
     expect(@linkage).to be_instance_of(HarmonizerRedis::Linkage)
-    expect(@linkage.id).to eq(5)
     expect(@linkage.content).to eq('testing')
     expect(@linkage.category_id).to eq(3)
   end
@@ -22,7 +21,7 @@ describe HarmonizerRedis::Linkage do
     expect(Redis.current.sismember("#{@linkage.class}:set", @linkage.id)).to be true
     expect(Redis.current.get("#{@linkage.class}:#{@linkage.id}:content")).to eq('testing')
     expect(Redis.current.get("#{@linkage.class}:#{@linkage.id}:category_id")).to eq('3')
-    expect(Redis.current.sismember("HarmonizerRedis::Category:3:linkage_set", '5')).to be_truthy
+    expect(Redis.current.smembers("HarmonizerRedis::Category:3:linkage_set").length).to eq(1)
   end
 
   it 'should set old phrase if matches content' do
