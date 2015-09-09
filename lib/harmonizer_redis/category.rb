@@ -95,23 +95,23 @@ module HarmonizerRedis
         label_a = get_group_label(category_id, phrase_a_id)
         label_b = get_group_label(category_id, phrase_b_id)
 
-        # if label_a and label_b are both exist
+        # if label_a and label_b both exist
         unless label_a.nil? ^ label_b.nil?
           # if label_a and label_b are not the same label
           if label_a != label_b
             # delete both labels due to conflict
             Redis.current.del(label_a, label_b)
-          else
+          else # both labels are the same
             # delete only the label that belongs to the group getting destroyed
             Redis.current.del(label_b)
           end
         end
 
-        # if label_a is empty and label_b exists
+        # if only label_b exists
         if label_a.nil? && !label_b.nil?
           merge_phrase_group_helper(category_id, group_a, group_b)
           Redis.current.del(group_a)
-        else # label_b is empty and label_a exists, or both are empty, or both existed
+        else # if only label_a exists
           merge_phrase_group_helper(category_id, group_b, group_a)
           Redis.current.del(group_b)
         end

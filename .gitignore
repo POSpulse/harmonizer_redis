@@ -9,3 +9,5 @@
 /tmp/
 Makefile
 *.bundle
+.DS_Store
+.idea/
