@@ -20,7 +20,6 @@ module HarmonizerRedis
 
       unless @id && @content && @category_id
         raise "id, content, and category_id are not all set"
-        return
       end
 
       @content_normalized = HarmonizerRedis.normalize_string(@content)
@@ -87,7 +86,6 @@ module HarmonizerRedis
 
     ### Functionality
     def calculate_similarities
-      # TODO: Test this!
       own_phrase_id = phrase_id
       own_cat_id = category_id
       phrase_list = Category.get_phrase_list(own_cat_id)
@@ -101,11 +99,15 @@ module HarmonizerRedis
           end
         end
       end
+      Category.set_phrase_calculated(own_cat_id, own_phrase_id, 1)
+      Category.reset_changed(own_cat_id)
     end
 
     def get_similarities(num_phrases = 20)
       self_phrase_id = phrase_id
-      # Check if Category has been calculated
+      unless is_calculated?
+        calculate_similarities
+      end
       phrase_id_list = Redis.current.zrevrange("HarmonizerRedis::Category:#{self.category_id}:#{self_phrase_id}:sims",
                                                0, num_phrases, :with_scores => true)
       results = []
@@ -144,6 +146,14 @@ module HarmonizerRedis
       self.class.is_linkage_saved?(@id)
     end
 
+    def is_calculated?
+      if is_category_changed? || !is_saved?
+        false
+      else
+        Category.is_phrase_calculated?(category_id, phrase_id)
+      end
+    end
+
     class << self
       def find(linkage_id)
         unless is_linkage_saved?(linkage_id)
@@ -173,7 +183,6 @@ module HarmonizerRedis
       def get_content_normalized(linkage_id)
         Redis.current.get("#{self}:#{linkage_id}:content_normalized")
       end
-
     end
   end
 end

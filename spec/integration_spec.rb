@@ -32,9 +32,12 @@ describe 'Integration Tests' do
 
   it "should allow separate calculations" do
     # Batch calculate similarities
-    my_linkage = HarmonizerRedis::Linkage.find(@id_map[0])
     HarmonizerRedis.calculate_similarities(2)
-    expect(my_linkage.get_similarities(20)).to eq([])
+    my_linkage = HarmonizerRedis::Linkage.find(@id_map[0])
+    phrase_id_list = Redis.current.
+        zrevrange("HarmonizerRedis::Category:#{my_linkage.category_id}:#{my_linkage.phrase_id}:sims",
+                  0, 20, :with_scores => true)
+    expect(phrase_id_list).to eq([])
   end
 
   it "should retrieve similarities for a linkage" do
@@ -44,6 +47,23 @@ describe 'Integration Tests' do
     expect(similar_phrases.length).to eq(2)
     expect(similar_phrases[0][-1]).to eq("1")
     expect(similar_phrases[1][-1]).to eq("2")
+  end
+
+  it "should calc individual linkage similarities if no calculation has been made or data changes" do
+    my_linkage = HarmonizerRedis::Linkage.find(@id_map[0])
+    similar_phrases = my_linkage.get_similarities(20)
+    expect(similar_phrases.length).to eq(2)
+    expect(similar_phrases[0][-1]).to eq("1")
+    expect(similar_phrases[1][-1]).to eq("2")
+  end
+
+  it "should keep track if new calculations need to be made" do
+    my_linkage = HarmonizerRedis::Linkage.find(@id_map[0])
+    expect(my_linkage.is_calculated?).to be_falsey
+    my_linkage.calculate_similarities
+    expect(my_linkage.is_calculated?).to be_truthy
+    HarmonizerRedis::Linkage.new(content: 'new linkage', category_id: 1).save
+    expect(my_linkage.is_calculated?).to be_falsey
   end
 
   it "should combine linkage's phrase with another phrase" do

@@ -36,19 +36,16 @@ my_linkage = HarmonizerRedis::Linkage.find(my_linkage_id)
 
 ### Calculating and Retrieving Similarities
 
-First a call to calculate similarities needs to be made before displaying the scores for any linkages in the category
+Calculate similarities for all the linkages in a category in a batch. New calculations will need to
+be performed if new linkages are added.
 
 ```ruby
 HarmonizerRedis.calculate_similarities(my_category_id)
 ```
 
-To calculate similarities for a specific linkage (this means you can only get similar phrases for this specific linkage)
-
-```ruby
-my_linkage.calculate_similarities
-```
-
-To get an Array of similar phrases. The default is to return the top 20 phrases.
+To get an Array of similar phrases. The default is to return the top 20 phrases. If new linkages have
+been added or if the similarities have not yet been computed for this linkage, it will be computed
+automatically with this call.
 
 ```ruby
 my_linkage.get_similarities

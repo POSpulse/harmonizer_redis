@@ -26,6 +26,7 @@ module HarmonizerRedis
 
         set_changed(category_id, 1)
         set_calculated(category_id, 0)
+        set_phrase_calculated(category_id, phrase_id, 0)
 
         # Creating/adding to a group
         add_group(category_id, phrase_id)
@@ -45,7 +46,7 @@ module HarmonizerRedis
 
       def get_matrices(category_id, phrase_id_list)
         matrices_list = []
-        if !matrices_calculated?(category_id)
+        if !matrices_calculated?(category_id) || changed?(category_id)
           phrase_id_list.each do |id|
             content = Phrase.get_content(id)
             new_matrix = IdfScorer.serialize_matrix(IdfScorer.calc_soft_matrix(content))
@@ -78,6 +79,10 @@ module HarmonizerRedis
 
       def matrices_calculated?(category_id)
         !Redis.current.getbit("#{self}:calculated", category_id).zero?
+      end
+
+      def is_phrase_calculated?(category_id, phrase_id)
+        !Redis.current.getbit("#{self}:#{category_id}:calculated", phrase_id).zero?
       end
 
       # Merge 2 phrases' groups
@@ -183,6 +188,10 @@ module HarmonizerRedis
 
       def set_calculated(category_id, value)
         Redis.current.setbit("#{self}:calculated", category_id, value)
+      end
+
+      def set_phrase_calculated(category_id, phrase_id, value)
+        Redis.current.setbit("#{self}:#{category_id}:calculated", phrase_id, value)
       end
 
       def add_group(category_id, phrase_id)
