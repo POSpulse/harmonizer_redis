@@ -11,3 +11,4 @@ Makefile
 *.bundle
 .DS_Store
 .idea/
+*.gem
